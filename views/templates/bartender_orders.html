@@ -1,0 +1,10 @@
+{{define "bartender_orders.html"}}
+<section class="card">
+  <h1>Order Queue</h1>
+  <p class="muted">Newest first. Use one-click status updates. This page updates live via SSE.</p>
+</section>
+
+<section id="ordersList">
+  {{template "orders_list.html" .}}
+</section>
+{{end}}

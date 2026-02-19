@@ -1,0 +1,60 @@
+{{define "admin_users.html"}}
+<section class="card">
+  <h1>Users & Roles</h1>
+  <p class="muted">Create, enable/disable accounts, assign roles, set bartender duty.</p>
+
+  {{template "user_form.html" .}}
+</section>
+
+<section class="card">
+  <h2>All users</h2>
+
+  <div class="table">
+    <div class="table__head">
+      <div>Email</div><div>Name</div><div>Role</div><div>Active</div><div>Duty</div><div>Actions</div>
+    </div>
+
+    {{range .Page.Users}}
+      <form method="post" action="/admin/users/{{.ID}}" class="table__row table__row--users">
+        <input name="email" value="{{.Email}}">
+        <input name="display_name" value="{{.DisplayName}}">
+
+        <select name="role">
+          <option value="USER" {{if eq .Role "USER"}}selected{{end}}>USER</option>
+          <option value="BARTENDER" {{if eq .Role "BARTENDER"}}selected{{end}}>BARTENDER</option>
+          <option value="ADMIN" {{if eq .Role "ADMIN"}}selected{{end}}>ADMIN</option>
+        </select>
+
+        <div class="pill {{if .IsActive}}pill--ok{{else}}pill--bad{{end}}">
+          {{if .IsActive}}yes{{else}}no{{end}}
+        </div>
+
+        <div class="pill {{if .OnDuty}}pill--ok{{else}}pill--soft{{end}}">
+          {{if .OnDuty}}on{{else}}off{{end}}
+        </div>
+
+        <div class="table__actions">
+          <!-- values for toggle endpoints -->
+          <input type="hidden" name="active" value="{{if .IsActive}}0{{else}}1{{end}}">
+          <input type="hidden" name="on_duty" value="{{if .OnDuty}}0{{else}}1{{end}}">
+
+          <button class="btn btn--small" type="submit">Save</button>
+
+          <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/toggle">
+            {{if .IsActive}}Disable{{else}}Enable{{end}}
+          </button>
+
+          <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/duty">
+            Toggle duty
+          </button>
+
+          <div class="pwgroup">
+            <input name="password" placeholder="New password" type="password" minlength="8">
+            <button class="btn btn--small" type="submit">Set password</button>
+          </div>
+        </div>
+      </form>
+    {{end}}
+  </div>
+</section>
+{{end}}

@@ -1,0 +1,26 @@
+{{define "user_form.html"}}
+<h2>Create user</h2>
+<form method="post" action="/admin/users" class="form form--grid">
+  <label>
+    <span>Email</span>
+    <input name="email" type="email" required>
+  </label>
+  <label>
+    <span>Display name</span>
+    <input name="display_name" required>
+  </label>
+  <label>
+    <span>Role</span>
+    <select name="role">
+      <option value="USER">USER</option>
+      <option value="BARTENDER">BARTENDER</option>
+      <option value="ADMIN">ADMIN</option>
+    </select>
+  </label>
+  <label>
+    <span>Password</span>
+    <input name="password" type="password" minlength="8" required>
+  </label>
+  <button class="btn btn--primary" type="submit">Create</button>
+</form>
+{{end}}

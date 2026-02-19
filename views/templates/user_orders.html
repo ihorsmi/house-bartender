@@ -1,0 +1,10 @@
+{{define "user_orders.html"}}
+<section class="card">
+  <h1>My Orders</h1>
+  <p class="muted">This page updates live via SSE.</p>
+</section>
+
+<section id="ordersList">
+  {{template "orders_list.html" .}}
+</section>
+{{end}}

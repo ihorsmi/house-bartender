@@ -1,0 +1,26 @@
+{{define "login.html"}}
+<section class="card">
+  <h1>Login</h1>
+  <p class="muted">Use your email + password. Demo users are seeded.</p>
+
+  <form method="post" action="/login" class="form">
+    <label>
+      <span>Email</span>
+      <input name="email" type="email" autocomplete="username" required>
+    </label>
+
+    <label>
+      <span>Password</span>
+      <input name="password" type="password" autocomplete="current-password" required>
+    </label>
+
+    <button class="btn btn--primary" type="submit">Login</button>
+  </form>
+
+  <div class="hint">
+    <div><strong>Demo:</strong> admin@local / admin1234</div>
+    <div><strong>Demo:</strong> bartender@local / bartender1234</div>
+    <div><strong>Demo:</strong> user@local / user1234</div>
+  </div>
+</section>
+{{end}}

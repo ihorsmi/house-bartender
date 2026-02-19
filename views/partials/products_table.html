@@ -1,0 +1,87 @@
+{{define "products_table.html"}}
+{{with .Page}}
+  {{if .Products}}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th class="right">Stock</th>
+            <th>Status</th>
+            {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
+              <th class="right">Actions</th>
+            {{end}}
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Products}}
+            <tr>
+              <td><strong>{{.Name}}</strong></td>
+              <td class="muted">{{.Category}}</td>
+
+              <td class="right">
+                {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
+                  <form class="row row--gap row--right"
+                        method="post"
+                        action="/bartender/products/{{.ID}}/stock"
+                        data-hx-post="/bartender/products/{{.ID}}/stock"
+                        data-hx-target="#productsTable"
+                        data-hx-swap="innerHTML">
+                    <input class="inp inp--sm right" name="stock_count" placeholder="(unset)"
+                           value="{{if .StockCount}}{{.StockCount}}{{end}}" style="width: 90px;">
+                    <button class="btn btn--sm" type="submit">Save</button>
+                  </form>
+                {{else}}
+                  {{if .StockCount}}{{.StockCount}}{{else}}—{{end}}
+                {{end}}
+              </td>
+
+              <td>
+                {{if .ComputedAvail}}
+                  <span class="badge badge--ok">Available</span>
+                {{else}}
+                  <span class="badge">Unavailable</span>
+                {{end}}
+              </td>
+
+              {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
+                <td class="right">
+                  <div class="row row--gap row--right row--wrap">
+                    <!-- Toggle availability (only meaningful when stock_count is NULL) -->
+                    <form method="post"
+                          action="/bartender/products/{{.ID}}/toggle"
+                          data-hx-post="/bartender/products/{{.ID}}/toggle"
+                          data-hx-target="#productsTable"
+                          data-hx-swap="innerHTML">
+                      <input type="hidden" name="avail" value="{{if .ComputedAvail}}0{{else}}1{{end}}">
+                      <button class="btn btn--sm" type="submit">
+                        {{if .ComputedAvail}}Set Unavailable{{else}}Set Available{{end}}
+                      </button>
+                    </form>
+
+                    <a class="btn btn--sm btn--ghost" href="/bartender/products?edit={{.ID}}">Edit</a>
+
+                    <form method="post"
+                          action="/bartender/products/{{.ID}}/delete"
+                          data-hx-post="/bartender/products/{{.ID}}/delete"
+                          data-hx-target="#productsTable"
+                          data-hx-swap="innerHTML"
+                          onsubmit="return confirm('Delete product? This may affect cocktails using it.');">
+                      <button class="btn btn--sm btn--danger" type="submit">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              {{end}}
+            </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <p class="muted">No products found.</p>
+  {{end}}
+{{else}}
+  <p class="muted">No products found.</p>
+{{end}}
+{{end}}

@@ -1,0 +1,274 @@
+:root{
+  --bg:#0b0d12;
+  --card:#121622;
+  --muted:#9aa4b2;
+  --text:#e8eef7;
+  --line:#1f2636;
+  --primary:#6ee7b7;
+  --danger:#fb7185;
+  --warn:#fbbf24;
+  --soft:#2a3246;
+  --radius:16px;
+  --container:980px;
+  --pad:18px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:linear-gradient(180deg,#0b0d12,#0a0c10);
+  color:var(--text);
+  font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+}
+
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.container{max-width:var(--container);margin:0 auto;padding:var(--pad)}
+
+.topbar{
+  position:sticky;top:0;z-index:10;
+  display:flex;gap:12px;align-items:center;justify-content:space-between;
+  padding:14px 18px;
+  background:rgba(10,12,16,.92);
+  border-bottom:1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+.brand__title{font-weight:800;letter-spacing:.2px}
+.brand__sub{font-size:12px;color:var(--muted)}
+.nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.nav__link{padding:8px 10px;border-radius:12px;background:transparent;border:1px solid transparent;color:var(--text)}
+.nav__link:hover{border-color:var(--line);text-decoration:none}
+.nav__inline{display:inline}
+.nav__btn{padding:8px 10px;border-radius:12px;background:transparent;border:1px solid var(--line);color:var(--text);cursor:pointer}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px;
+  margin:12px 0;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);
+}
+.card--compact{padding:12px}
+
+h1,h2,h3{margin:0 0 10px}
+.m0{margin:0}
+.muted{color:var(--muted)}
+.tiny{font-size:12px}
+
+.row{display:flex;align-items:center}
+.row--gap{gap:10px}
+.row--wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+
+.form{display:flex;flex-direction:column;gap:12px}
+.form--grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:720px){
+  .form--grid{grid-template-columns:1fr 1fr}
+  .span2{grid-column:1/-1}
+}
+
+label span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+input,select,textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#0f1320;
+  color:var(--text);
+  outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:rgba(110,231,183,.6)}
+.input{width:auto}
+.input--xs{width:120px}
+
+.input--search{
+  width: 320px;
+  flex: 0 0 320px;
+}
+
+/* On small screens let it drop to the next line and take full width */
+@media(max-width:719px){
+  .input--search{
+    width:100%;
+    flex: 1 1 auto;
+  }
+}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+}
+.btn:hover{border-color:rgba(110,231,183,.3)}
+.btn--primary{background:rgba(110,231,183,.12);border-color:rgba(110,231,183,.45)}
+.btn--danger{background:rgba(251,113,133,.12);border-color:rgba(251,113,133,.45)}
+.btn--small{padding:8px 10px;border-radius:10px;font-size:12px}
+.btn--ghost{background:rgba(42,50,70,.25)}
+/* compatibility if any template still uses btn--sm */
+.btn--sm{padding:8px 10px;border-radius:10px;font-size:12px}
+
+.filters{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:720px){.filters{grid-template-columns:repeat(4,1fr)}}
+
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
+
+.thumb{
+  width:84px;height:84px;border-radius:14px;
+  object-fit:cover;border:1px solid var(--line)
+}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{font-size:12px;padding:4px 8px;border-radius:999px;background:#0f1320;border:1px solid var(--line)}
+.chip--soft{background:rgba(42,50,70,.55)}
+
+.badge{
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(42,50,70,.25);
+}
+.badge--ok{border-color:rgba(110,231,183,.55);background:rgba(110,231,183,.10)}
+
+.pill{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:rgba(42,50,70,.45)}
+.pill--ok{border-color:rgba(110,231,183,.55);background:rgba(110,231,183,.10)}
+.pill--bad{border-color:rgba(251,113,133,.55);background:rgba(251,113,133,.10)}
+.pill--soft{background:rgba(42,50,70,.35)}
+
+.flashes{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.flash{padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
+.flash--success{border-color:rgba(110,231,183,.55);background:rgba(110,231,183,.10)}
+.flash--error{border-color:rgba(251,113,133,.55);background:rgba(251,113,133,.10)}
+.flash--info{border-color:rgba(147,197,253,.55);background:rgba(147,197,253,.10)}
+
+.alert{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(42,50,70,.35);margin:10px 0}
+.alert--warn{border-color:rgba(251,191,36,.55);background:rgba(251,191,36,.10)}
+
+.list{margin:0;padding-left:18px}
+.list li{margin:6px 0}
+.list li.bad{color:#fecaca}
+.tag{font-size:11px;padding:2px 6px;border-radius:999px;border:1px solid var(--line);margin-left:8px}
+.tag--soft{background:rgba(42,50,70,.35)}
+.tag--danger{border-color:rgba(251,113,133,.55);background:rgba(251,113,133,.10)}
+
+.pre{
+  background:#0f1320;border:1px solid var(--line);
+  padding:10px;border-radius:12px;white-space:pre-wrap
+}
+
+/* ---- “table” rows (Admin Users etc.) ---- */
+.table{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  width:100%;
+  overflow-x:auto; /* never spill outside cards */
+}
+.table__head{display:none}
+
+.table__row{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+
+  overflow:hidden; /* ensures nothing paints outside the row border */
+}
+
+@media(min-width:720px){
+  .table__head{
+    display:grid;
+    grid-template-columns:minmax(180px,2fr) minmax(140px,1.2fr) minmax(120px,1fr) 90px 90px 1fr;
+    gap:10px;
+    color:var(--muted);
+    font-size:12px;
+    padding:0 6px;
+  }
+
+  /* Users table row layout */
+  .table__row--users{
+    display:grid;
+    grid-template-columns:minmax(180px,2fr) minmax(140px,1.2fr) minmax(120px,1fr) 90px 90px 1fr;
+    gap:10px;
+    align-items:center;
+  }
+
+  /* critical: allow grid children to shrink */
+  .table__row--users > *{min-width:0}
+}
+
+/* Actions block stays INSIDE the row and wraps */
+.table__actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-end;
+  min-width:0;
+}
+
+/* Password group: input + button behave like a single unit */
+.pwgroup{
+  display:flex;
+  flex-wrap:nowrap;
+  gap:8px;
+  align-items:center;
+  min-width:0;
+  max-width:100%;
+}
+.pwgroup input{
+  width:180px;
+  flex:1 1 180px;
+  min-width:140px;
+}
+
+/* ---- cocktail cards: consistent 2-column layout ---- */
+.cocktail-card__inner{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+@media(min-width:720px){
+  .cocktail-card__inner{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:12px;
+    align-items:start;
+  }
+}
+.cocktail-card__main{min-width:0}
+.cocktail-card__actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-end;
+}
+.cocktail-card__actions .btn{white-space:nowrap}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}
+.stat{border:1px solid var(--line);border-radius:14px;padding:10px;background:rgba(42,50,70,.25);text-align:center}
+.stat__n{font-size:20px;font-weight:800}
+.stat__l{font-size:12px;color:var(--muted)}
+
+.kv{display:grid;grid-template-columns:120px 1fr;gap:8px;margin:10px 0}
+.kv__k{color:var(--muted);font-size:12px}
+.kv__v{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px}
+
+.timeline{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
+.timeline__item{display:flex;gap:10px;align-items:flex-start}
+.timeline__dot{width:10px;height:10px;border-radius:999px;background:rgba(110,231,183,.7);margin-top:6px}
+.timeline__line{display:flex;gap:10px;align-items:baseline}
+
+.spacer{height:30px}

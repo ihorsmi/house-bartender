@@ -1,0 +1,101 @@
+{{define "orders_list.html"}}
+{{if eq .Page.Mode "user"}}
+  {{range .Page.Orders}}
+    <article class="card card--compact">
+      <div class="row row--gap">
+        <div class="grow">
+          <div class="row row--gap">
+            <h3 class="m0">{{.CocktailName}}</h3>
+            <span class="pill pill--soft">{{.Status}}</span>
+          </div>
+          <div class="muted tiny">
+            Qty: {{.Quantity}} • Location: {{.Location}} • Placed: {{fmtTime .CreatedAt}}
+          </div>
+          {{if .AssignedBartenderName}}
+            <div class="muted tiny">Bartender: {{.AssignedBartenderName}}</div>
+          {{end}}
+          {{if .Notes}}<div class="muted">{{.Notes}}</div>{{end}}
+        </div>
+        {{if .CocktailImagePath}}<img class="thumb" src="{{.CocktailImagePath}}" alt="cocktail image">{{end}}
+      </div>
+
+      <div class="timeline">
+        {{with (index $.Page.Events .ID)}}
+          {{range .}}
+            <div class="timeline__item">
+              <div class="timeline__dot"></div>
+              <div class="timeline__body">
+                <div class="timeline__line">
+                  <strong>{{.ToStatus}}</strong>
+                  <span class="muted tiny">{{fmtTime .CreatedAt}}</span>
+                </div>
+                {{if .ChangedByName}}<div class="muted tiny">by {{.ChangedByName}}</div>{{end}}
+              </div>
+            </div>
+          {{end}}
+        {{end}}
+      </div>
+    </article>
+  {{end}}
+
+  {{if not .Page.Orders}}
+    <div class="card"><p class="muted">No orders yet.</p></div>
+  {{end}}
+{{else}}
+  {{/* bartender queue */}}
+  {{range .Page.Orders}}
+    <article class="card card--compact">
+      <div class="row row--gap">
+        <div class="grow">
+          <div class="row row--gap">
+            <h3 class="m0">#{{.ID}} — {{.CocktailName}}</h3>
+            <span class="pill pill--soft">{{.Status}}</span>
+            <span class="muted tiny">({{since .CreatedAt $.Now}})</span>
+          </div>
+          <div class="muted tiny">User: {{.UserDisplayName}} • Qty: {{.Quantity}} • Location: {{.Location}}</div>
+          {{if .AssignedBartenderName}}
+            <div class="muted tiny">Assigned: {{.AssignedBartenderName}}</div>
+          {{end}}
+          {{if .Notes}}<div class="muted">{{.Notes}}</div>{{end}}
+        </div>
+      </div>
+
+      <div class="row row--gap">
+        {{if eq .Status "PLACED"}}
+          <form method="post" action="/bartender/orders/{{.ID}}/accept">
+            <button class="btn btn--small btn--primary" type="submit">Accept</button>
+          </form>
+        {{end}}
+
+        <form method="post" action="/bartender/orders/{{.ID}}/assign" class="row row--gap">
+          <select name="bartender_id" class="input input--xs">
+            <option value="">Assign to me</option>
+            {{range $.Page.Bartenders}}
+              <option value="{{.ID}}">{{.DisplayName}}</option>
+            {{end}}
+          </select>
+          <button class="btn btn--small" type="submit">Assign</button>
+        </form>
+
+        <form method="post" action="/bartender/orders/{{.ID}}/status" class="row row--gap">
+          <select name="to_status" class="input input--xs">
+            {{if eq .Status "PLACED"}}<option value="ACCEPTED">ACCEPTED</option>{{end}}
+            {{if eq .Status "ACCEPTED"}}<option value="IN_PROGRESS">IN_PROGRESS</option>{{end}}
+            {{if eq .Status "IN_PROGRESS"}}<option value="READY">READY</option>{{end}}
+            {{if eq .Status "READY"}}<option value="DELIVERED">DELIVERED</option>{{end}}
+          </select>
+          <button class="btn btn--small" type="submit">Update</button>
+        </form>
+
+        <form method="post" action="/bartender/orders/{{.ID}}/cancel" onsubmit="return confirm('Cancel order?')">
+          <button class="btn btn--small btn--danger" type="submit">Cancel</button>
+        </form>
+      </div>
+    </article>
+  {{end}}
+
+  {{if not .Page.Orders}}
+    <div class="card"><p class="muted">Queue is empty.</p></div>
+  {{end}}
+{{end}}
+{{end}}
