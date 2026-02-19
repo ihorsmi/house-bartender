@@ -18,6 +18,19 @@ type BartenderDashboardPage struct {
 type BartenderProductsPage struct {
 	Search   string
 	Products []db.Product
+	Form     ProductFormState
+}
+
+type ProductFormState struct {
+	Mode          string // "new" or "edit"
+	Action        string
+	Name          string
+	Category      string
+	ABVPercent    string
+	AllergenFlags string
+	Notes         string
+	StockCount    string
+	IsAvailable   bool
 }
 
 type BartenderCocktailsPage struct {
@@ -82,7 +95,11 @@ func (s *Server) BartenderDutyPost(w http.ResponseWriter, r *http.Request) {
 func (s *Server) BartenderProductsGet(w http.ResponseWriter, r *http.Request) {
 	search := r.URL.Query().Get("q")
 	products, _ := s.App.Store().Q.ListProducts(search)
-	page := BartenderProductsPage{Search: search, Products: products}
+	page := BartenderProductsPage{
+		Search:   search,
+		Products: products,
+		Form:     defaultProductFormState(),
+	}
 	s.renderLayout(w, r, "Products", "bartender_products.html", page)
 }
 
@@ -90,6 +107,14 @@ func (s *Server) BartenderProductsPartialGet(w http.ResponseWriter, r *http.Requ
 	search := r.URL.Query().Get("q")
 	products, _ := s.App.Store().Q.ListProducts(search)
 	s.renderPartial(w, r, "products_table.html", BartenderProductsPage{Search: search, Products: products}, "")
+}
+
+func defaultProductFormState() ProductFormState {
+	return ProductFormState{
+		Mode:        "new",
+		Action:      "/bartender/products",
+		IsAvailable: true,
+	}
 }
 
 func (s *Server) BartenderCocktailsGet(w http.ResponseWriter, r *http.Request) {

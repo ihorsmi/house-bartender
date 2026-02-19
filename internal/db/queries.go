@@ -213,6 +213,38 @@ func (q *Queries) CreateProduct(p CreateProductParams) (int64, error) {
 	return res.LastInsertId()
 }
 
+func (q *Queries) GetProductByID(id int64) (*Product, error) {
+	row := q.db.QueryRow(fmt.Sprintf(`
+		SELECT
+			p.id,
+			COALESCE(p.name,'') AS name,
+			COALESCE(p.category,'') AS category,
+			COALESCE(p.abv_percent, 0) AS abv_percent,
+			COALESCE(p.allergen_flags,'') AS allergen_flags,
+			COALESCE(p.notes,'') AS notes,
+			COALESCE(p.is_available, 0) AS is_available,
+			p.stock_count,
+			%s AS computed_avail,
+			p.created_at,p.updated_at
+		FROM products p
+		WHERE p.id=?`, computedAvailExpr()), id)
+
+	var p Product
+	var isAvail, comp int
+	var ca, ua int64
+	if err := row.Scan(&p.ID, &p.Name, &p.Category, &p.ABVPercent, &p.AllergenFlags, &p.Notes, &isAvail, &p.StockCount, &comp, &ca, &ua); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	p.IsAvailable = i2b(isAvail)
+	p.ComputedAvail = i2b(comp)
+	p.CreatedAt = tFromUnix(ca)
+	p.UpdatedAt = tFromUnix(ua)
+	return &p, nil
+}
+
 func (q *Queries) UpdateProduct(p UpdateProductParams) error {
 	_, err := q.db.Exec(`
 		UPDATE products

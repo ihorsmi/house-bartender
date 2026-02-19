@@ -103,6 +103,8 @@ func main() {
 
 		br.Get("/products", h.BartenderProductsGet)
 		br.Post("/products", h.ProductCreatePost)
+		br.Get("/products/{id}/edit", h.ProductEditGet)
+		br.Post("/products/{id}/edit", h.ProductEditPost)
 		br.Post("/products/{id}/toggle", h.ProductTogglePost)
 		br.Post("/products/{id}/stock", h.ProductStockPost)
 		br.Post("/products/{id}/delete", h.ProductDeletePost)

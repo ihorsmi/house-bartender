@@ -1,37 +1,42 @@
 {{define "product_form.html"}}
-<h2>Add product</h2>
-<form method="post" action="/bartender/products" class="form form--grid">
+<h2>{{if eq .Page.Form.Mode "edit"}}Edit product{{else}}Add product{{end}}</h2>
+<form method="post" action="{{.Page.Form.Action}}" class="form form--grid">
   <label>
     <span>Name</span>
-    <input name="name" required placeholder="Vodka">
+    <input name="name" required placeholder="Vodka" value="{{.Page.Form.Name}}">
   </label>
   <label>
     <span>Category</span>
-    <input name="category" required placeholder="spirit / mixer / garnish">
+    <input name="category" required placeholder="spirit / mixer / garnish" value="{{.Page.Form.Category}}">
   </label>
   <label>
     <span>ABV % (optional)</span>
-    <input name="abv_percent" placeholder="40">
+    <input name="abv_percent" placeholder="40" value="{{.Page.Form.ABVPercent}}">
   </label>
   <label>
     <span>Allergens (csv)</span>
-    <input name="allergen_flags" placeholder="nuts, dairy">
+    <input name="allergen_flags" placeholder="nuts, dairy" value="{{.Page.Form.AllergenFlags}}">
   </label>
   <label class="span2">
     <span>Notes</span>
-    <input name="notes" placeholder="anything important...">
+    <input name="notes" placeholder="anything important..." value="{{.Page.Form.Notes}}">
   </label>
   <label>
     <span>Stock (optional)</span>
-    <input name="stock_count" placeholder="e.g. 12">
+    <input name="stock_count" placeholder="e.g. 12" value="{{.Page.Form.StockCount}}">
     <small class="muted">If set: availability derives from stock &gt; 0</small>
   </label>
   <label class="row row--gap">
     <input type="hidden" name="is_available" value="0">
-    <input type="checkbox" name="is_available" value="1" checked>
+    <input type="checkbox" name="is_available" value="1" {{if .Page.Form.IsAvailable}}checked{{end}}>
     <span>Available (if no stock)</span>
   </label>
 
-  <button class="btn btn--primary" type="submit">Create</button>
+  <div class="row row--gap">
+    <button class="btn btn--primary" type="submit">{{if eq .Page.Form.Mode "edit"}}Save{{else}}Create{{end}}</button>
+    {{if eq .Page.Form.Mode "edit"}}
+      <a class="btn" href="/bartender/products">Cancel</a>
+    {{end}}
+  </div>
 </form>
 {{end}}
