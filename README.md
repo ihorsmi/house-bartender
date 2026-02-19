@@ -24,7 +24,6 @@ Built as a lightweight, containerized app with a single Go backend binary, serve
 - [Development (local)](#development-local)
 - [Troubleshooting](#troubleshooting)
 - [Screenshots](#screenshots)
-- [Roadmap ideas](#roadmap-ideas)
 - [Contributing](#contributing)
 - [Security notes](#security-notes)
 
