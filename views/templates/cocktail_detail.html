@@ -1,0 +1,92 @@
+{{define "cocktail_detail.html"}}
+<section class="card">
+  <div class="row row--gap">
+    <div class="grow">
+      <h1>{{.Page.Cocktail.Name}}</h1>
+      <div class="chips">
+        {{range .Page.TagList}}<span class="chip">{{.}}</span>{{end}}
+        <span class="chip chip--soft">{{.Page.Cocktail.Difficulty}}</span>
+        <span class="chip chip--soft">{{.Page.Cocktail.PrepTimeMinutes}} min</span>
+        {{if .Page.IsAvailable}}
+          <span class="chip chip--ok">Available</span>
+        {{else}}
+          <span class="chip chip--warn">Unavailable</span>
+        {{end}}
+      </div>
+      {{if .Page.Cocktail.Description}}<p class="muted">{{.Page.Cocktail.Description}}</p>{{end}}
+    </div>
+    {{if .Page.Cocktail.ImagePath}}
+      <img class="thumb" src="{{.Page.Cocktail.ImagePath}}" alt="cocktail image">
+    {{end}}
+  </div>
+
+  <h3>Ingredients</h3>
+  <ul class="list">
+    {{range .Page.Ingredients}}
+      <li class="{{if and .Required (not .ProductAvail)}}bad{{end}}">
+        <strong>{{.ProductName}}</strong>
+        {{ $q := fmtQty .Quantity }}
+        {{if $q}}{{$q}} {{.Unit}}{{else}}{{.Unit}}{{end}}
+        {{if .Required}}<span class="tag">required</span>{{else}}<span class="tag tag--soft">optional</span>{{end}}
+        {{if not .ProductAvail}}<span class="tag tag--danger">not available</span>{{end}}
+      </li>
+    {{end}}
+  </ul>
+
+  <h3>Instructions</h3>
+  <pre class="pre">{{.Page.Cocktail.Instructions}}</pre>
+
+  <div class="row row--gap row--wrap">
+    {{if and .User (eq .User.Role "BARTENDER")}}
+      <a class="btn" href="/bartender/cocktails">Back</a>
+    {{else if and .User (eq .User.Role "ADMIN")}}
+      <a class="btn" href="/admin/users">Back</a>
+    {{else}}
+      <a class="btn" href="/">Back</a>
+    {{end}}
+  </div>
+</section>
+
+{{/* Order section: USER-only */}}
+{{if and .User (eq .User.Role "USER")}}
+<section class="card">
+  <h2>Place an order</h2>
+  {{if not .Page.IsAvailable}}
+    <div class="alert alert--warn">This cocktail is not available right now.</div>
+  {{end}}
+
+  <form method="post" action="/orders" class="form">
+    <input type="hidden" name="cocktail_id" value="{{.Page.Cocktail.ID}}">
+
+    <label>
+      <span>Quantity</span>
+      <input name="quantity" type="number" min="1" max="10" value="1">
+    </label>
+
+    <label>
+      <span>Location</span>
+      <select name="location" required>
+        <option value="">Choose…</option>
+        <option>Living room</option>
+        <option>Kitchen</option>
+        <option>Balcony</option>
+        <option>Desk</option>
+        <option>Other (use Notes)</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Notes</span>
+      <textarea name="notes" rows="3" placeholder="e.g. less sweet, no ice…"></textarea>
+    </label>
+
+    <button class="btn btn--primary" type="submit" {{if not .Page.IsAvailable}}disabled{{end}}>Order now</button>
+  </form>
+</section>
+{{else}}
+<section class="card">
+  <h2>Ordering</h2>
+  <p class="muted">Ordering is available only in the User portal.</p>
+</section>
+{{end}}
+{{end}}

@@ -1,0 +1,18 @@
+{{define "admin_settings.html"}}
+<section class="card">
+  <h1>Settings</h1>
+
+  <div class="kv">
+    <div class="kv__k">DB Path</div><div class="kv__v">{{.Page.DBPath}}</div>
+    <div class="kv__k">Data Dir</div><div class="kv__v">{{.Page.DataDir}}</div>
+    <div class="kv__k">Counts</div><div class="kv__v">{{.Page.Counts}}</div>
+  </div>
+
+  <div class="row row--gap">
+    <a class="btn" href="/health">Health</a>
+    <form method="post" action="/admin/settings/seed">
+      <button class="btn btn--primary" type="submit">Run seed (idempotent)</button>
+    </form>
+  </div>
+</section>
+{{end}}

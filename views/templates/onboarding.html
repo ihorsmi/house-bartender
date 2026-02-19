@@ -1,0 +1,24 @@
+{{define "onboarding.html"}}
+<section class="card">
+  <h1>Create the first admin</h1>
+  <p class="muted">This page only appears when no admin exists.</p>
+
+  <form method="post" action="/onboarding" class="form">
+    <label>
+      <span>Email</span>
+      <input name="email" type="email" required>
+    </label>
+    <label>
+      <span>Display name</span>
+      <input name="display_name" type="text" required>
+    </label>
+    <label>
+      <span>Password</span>
+      <input name="password" type="password" minlength="8" required>
+      <small class="muted">Minimum 8 characters</small>
+    </label>
+
+    <button class="btn btn--primary" type="submit">Create admin</button>
+  </form>
+</section>
+{{end}}

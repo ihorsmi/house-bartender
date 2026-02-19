@@ -1,0 +1,81 @@
+{{define "layout.html"}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{if .Title}}{{.Title}} — {{end}}House Bartender</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body data-path="{{.Path}}" {{if .User}}data-role="{{.User.Role}}" data-user="{{.User.ID}}"{{end}}>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__title">House Bartender</div>
+      <div class="brand__sub">Offline • SQLite • SSE</div>
+    </div>
+
+    <nav class="nav">
+      {{if .User}}
+        {{if eq .User.Role "USER"}}
+          <a class="nav__link" href="/">Cocktails</a>
+          <a class="nav__link" href="/orders">My orders</a>
+        {{else if eq .User.Role "BARTENDER"}}
+          <a class="nav__link" href="/bartender/cocktails">Cocktails</a>
+          <a class="nav__link" href="/bartender/products">Products</a>
+          <a class="nav__link" href="/bartender/orders">Queue</a>
+        {{else if eq .User.Role "ADMIN"}}
+          <a class="nav__link" href="/admin/users">Users</a>
+          <a class="nav__link" href="/admin/settings">Settings</a>
+          <a class="nav__link" href="/bartender/cocktails">Cocktails</a>
+          <a class="nav__link" href="/bartender/products">Products</a>
+          <a class="nav__link" href="/bartender/orders">Queue</a>
+        {{end}}
+
+        <form method="post" action="/logout" class="nav__inline">
+          <button class="nav__btn" type="submit">Logout</button>
+        </form>
+      {{else}}
+        <a class="nav__link" href="/login">Login</a>
+      {{end}}
+    </nav>
+  </header>
+
+  <main class="container">
+    {{template "flash.html" .}}
+
+    {{- if eq .PageTemplate "login.html" -}}
+      {{template "login.html" .}}
+    {{- else if eq .PageTemplate "onboarding.html" -}}
+      {{template "onboarding.html" .}}
+    {{- else if eq .PageTemplate "user_home.html" -}}
+      {{template "user_home.html" .}}
+    {{- else if eq .PageTemplate "cocktail_detail.html" -}}
+      {{template "cocktail_detail.html" .}}
+    {{- else if eq .PageTemplate "user_orders.html" -}}
+      {{template "user_orders.html" .}}
+    {{- else if eq .PageTemplate "bartender_dashboard.html" -}}
+      {{template "bartender_dashboard.html" .}}
+    {{- else if eq .PageTemplate "bartender_products.html" -}}
+      {{template "bartender_products.html" .}}
+    {{- else if eq .PageTemplate "bartender_cocktails.html" -}}
+      {{template "bartender_cocktails.html" .}}
+    {{- else if eq .PageTemplate "bartender_orders.html" -}}
+      {{template "bartender_orders.html" .}}
+    {{- else if eq .PageTemplate "admin_users.html" -}}
+      {{template "admin_users.html" .}}
+    {{- else if eq .PageTemplate "admin_settings.html" -}}
+      {{template "admin_settings.html" .}}
+    {{- else -}}
+      <section class="card">
+        <h2>Template error</h2>
+        <p class="muted">Unknown PageTemplate: <code>{{.PageTemplate}}</code></p>
+      </section>
+    {{- end -}}
+  </main>
+
+  <script src="/static/htmx.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,9 @@
+{{define "nav_bartender.html"}}
+<a class="nav__link" href="/bartender">Dashboard</a>
+<a class="nav__link" href="/bartender/orders">Orders</a>
+<a class="nav__link" href="/bartender/products">Products</a>
+<a class="nav__link" href="/bartender/cocktails">Cocktails</a>
+<form method="post" action="/logout" class="nav__inline">
+  <button class="nav__btn" type="submit">Logout</button>
+</form>
+{{end}}

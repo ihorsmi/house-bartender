@@ -1,0 +1,15 @@
+{{define "bartender_cocktails.html"}}
+<section class="card">
+  <div class="row row--gap">
+    <div class="grow">
+      <h1>Cocktails</h1>
+      <p class="muted">A cocktail is available if enabled AND all required ingredients are available.</p>
+    </div>
+    <a class="btn btn--primary" href="/bartender/cocktails/new">New cocktail</a>
+  </div>
+</section>
+
+<section class="grid" id="cocktailsTable">
+  {{template "cocktails_table.html" .}}
+</section>
+{{end}}

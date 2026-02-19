@@ -1,0 +1,88 @@
+{{define "cocktail_form.html"}}
+<section class="card">
+  <h1>{{if eq .Page.Mode "edit"}}Edit{{else}}New{{end}} Cocktail</h1>
+  <p class="muted">Upload an optional image. Ingredients can be required or optional.</p>
+
+  <form method="post" enctype="multipart/form-data"
+        action="{{if eq .Page.Mode "edit"}}/bartender/cocktails/{{.Page.Cocktail.ID}}/edit{{else}}/bartender/cocktails/new{{end}}"
+        class="form">
+
+    <label>
+      <span>Name</span>
+      <input name="name" value="{{.Page.Cocktail.Name}}" required>
+    </label>
+
+    <label>
+      <span>Description</span>
+      <input name="description" value="{{.Page.Cocktail.Description}}">
+    </label>
+
+    <label>
+      <span>Tags (comma-separated)</span>
+      <input name="tags" value="{{.Page.Tags}}" placeholder="sweet, sour, strong, non-alcoholic">
+    </label>
+
+    <div class="row row--gap">
+      <label class="grow">
+        <span>Difficulty</span>
+        <select name="difficulty">
+          <option value="easy" {{if eq .Page.Cocktail.Difficulty "easy"}}selected{{end}}>easy</option>
+          <option value="medium" {{if eq .Page.Cocktail.Difficulty "medium"}}selected{{end}}>medium</option>
+          <option value="hard" {{if eq .Page.Cocktail.Difficulty "hard"}}selected{{end}}>hard</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Prep time (min)</span>
+        <input name="prep_time_minutes" type="number" min="1" value="{{.Page.Cocktail.PrepTimeMinutes}}">
+      </label>
+    </div>
+
+    <label>
+      <span>Instructions</span>
+      <textarea name="instructions" rows="6">{{.Page.Cocktail.Instructions}}</textarea>
+    </label>
+
+    <label>
+      <span>Image (optional)</span>
+      <input name="image" type="file" accept="image/*">
+      {{if .Page.Cocktail.ImagePath}}
+        <div class="muted tiny">Current: {{.Page.Cocktail.ImagePath}}</div>
+      {{end}}
+    </label>
+
+    <label class="row row--gap">
+      <input type="hidden" name="is_enabled" value="0">
+      <input type="checkbox" name="is_enabled" value="1" {{if .Page.Cocktail.IsEnabled}}checked{{end}}>
+      <span>Enabled</span>
+    </label>
+
+    <h3>Ingredients</h3>
+    <div class="muted tiny">Fill as many rows as needed; blank rows are ignored.</div>
+
+    <div class="ingredients">
+      {{range .Page.IngRows}}
+        <div class="row row--gap ingrow">
+          <select name="ingredient_product_id" class="grow">
+            <option value="">Choose product…</option>
+            {{range $.Page.Products}}
+              <option value="{{.ID}}" {{if eq .ID $.ProductID}}selected{{end}}>{{.Category}} — {{.Name}}</option>
+            {{end}}
+          </select>
+          <input name="ingredient_quantity" class="input input--xs" placeholder="qty" value="{{.QuantityStr}}">
+          <input name="ingredient_unit" class="input input--xs" placeholder="unit" value="{{.Unit}}">
+          <select name="ingredient_required" class="input input--xs">
+            <option value="1" {{if .Required}}selected{{end}}>required</option>
+            <option value="0" {{if not .Required}}selected{{end}}>optional</option>
+          </select>
+        </div>
+      {{end}}
+    </div>
+
+    <div class="row row--gap">
+      <button class="btn btn--primary" type="submit">{{if eq .Page.Mode "edit"}}Save{{else}}Create{{end}}</button>
+      <a class="btn" href="/bartender/cocktails">Cancel</a>
+    </div>
+  </form>
+</section>
+{{end}}

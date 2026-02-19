@@ -1,0 +1,35 @@
+{{define "bartender_products.html"}}
+<section class="card">
+  <div class="row row--gap">
+    <div class="grow">
+      <h1>Products (Ingredients)</h1>
+      <p class="muted">Availability is derived from stock if stock is set (stock &gt; 0).</p>
+    </div>
+  </div>
+
+  {{template "product_form.html" .}}
+</section>
+
+<section class="card">
+  <div class="row row--gap row--wrap">
+    <div class="grow">
+      <h2>Quick Toggle / Search</h2>
+    </div>
+
+    <input
+      id="prodSearch"
+      class="input input--search"
+      name="q"
+      placeholder="Search…"
+      value="{{.Page.Search}}"
+      data-hx-get="/partials/bartender/products"
+      data-hx-target="#productsTable"
+      data-hx-trigger="keyup delay:250ms"
+    >
+  </div>
+
+  <div id="productsTable">
+    {{template "products_table.html" .}}
+  </div>
+</section>
+{{end}}

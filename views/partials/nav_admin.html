@@ -1,0 +1,9 @@
+{{define "nav_admin.html"}}
+<a class="nav__link" href="/">User</a>
+<a class="nav__link" href="/bartender">Bartender</a>
+<a class="nav__link" href="/admin/users">Admin</a>
+<a class="nav__link" href="/admin/settings">Settings</a>
+<form method="post" action="/logout" class="nav__inline">
+  <button class="nav__btn" type="submit">Logout</button>
+</form>
+{{end}}

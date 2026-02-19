@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    container_name: housebartender
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - housebartender_data:/data
+    restart: unless-stopped
+
+volumes:
+  housebartender_data:

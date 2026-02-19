@@ -1,0 +1,41 @@
+{{define "user_home.html"}}
+<section class="card">
+  <h1>Available cocktails</h1>
+  <p class="muted">Filters update instantly. Availability is based on required ingredients + cocktail enabled state.</p>
+
+  <div class="filters">
+    <label>
+      <span>Alcohol</span>
+      <select name="alc" id="f_alc" data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="change">
+        <option value="all" {{if eq .Page.FilterAlcohol "all"}}selected{{end}}>All</option>
+        <option value="alcohol" {{if eq .Page.FilterAlcohol "alcohol"}}selected{{end}}>Alcohol</option>
+        <option value="non" {{if eq .Page.FilterAlcohol "non"}}selected{{end}}>Non-alcoholic</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Tag</span>
+      <input name="tag" id="f_tag" placeholder="e.g. sour" value="{{.Page.FilterTag}}"
+             data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="keyup delay:300ms">
+    </label>
+
+    <label>
+      <span>Include ingredient</span>
+      <input name="include" id="f_include" placeholder="e.g. rum" value="{{.Page.IncludeIng}}"
+             data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="keyup delay:300ms">
+    </label>
+
+    <label>
+      <span>Exclude ingredient</span>
+      <input name="exclude" id="f_exclude" placeholder="e.g. tonic" value="{{.Page.ExcludeIng}}"
+             data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="keyup delay:300ms">
+    </label>
+  </div>
+</section>
+
+<section id="cocktailGrid" class="grid">
+  {{template "cocktails_table.html" .}}
+</section>
+
+<div class="spacer"></div>
+{{end}}
