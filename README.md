@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+# house-bartender
+=======
+>>>>>>> f45cd22 (Initial release (v1.0.0))
 House Bartender 🍸🏠
 
 A tiny, self-hosted cocktail ordering app for home use.
@@ -268,7 +274,28 @@ Make sure all {{if}} / {{else}} / {{end}} blocks are properly nested
 
 Avoid using template functions unless they exist in Go template.FuncMap
 
-Screenshots
+## Screenshots
+
+A quick look at the main flows in **House Bartender**:
+
+### User portal
+
+**User portal home / navigation**
+![User portal](docs/screenshots/userportal.png)
+
+**Browse available cocktails**
+![User cocktails](docs/screenshots/usercocktails.png)
+
+**Place and track orders**
+![User orders](docs/screenshots/userorders.png)
+
+### Bartender portal
+
+**Manage products / ingredient availability**
+![Bartender products](docs/screenshots/bartenderproducts.png)
+
+**Live order queue**
+![Bartender orders](docs/screenshots/bartenderorders.png)
 
 Roadmap ideas
 
@@ -304,4 +331,9 @@ Consider IP allowlists / auth hardening
 
 Use strong admin passwords
 
+<<<<<<< HEAD
 Keep session keys secret
+=======
+Keep session keys secret
+>>>>>>> b36a881 (Initial release (v1.0.0))
+>>>>>>> f45cd22 (Initial release (v1.0.0))
