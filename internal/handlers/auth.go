@@ -173,3 +173,18 @@ func parseIDParam(r *http.Request, key string) (int64, bool) {
 	id, err := strconv.ParseInt(v, 10, 64)
 	return id, err == nil && id > 0
 }
+
+func formBool(r *http.Request, key string) bool {
+	vals := r.Form[key]
+	if len(vals) == 0 {
+		v := strings.TrimSpace(strings.ToLower(r.FormValue(key)))
+		return v == "1" || v == "true" || v == "on" || v == "yes"
+	}
+	for _, raw := range vals {
+		v := strings.TrimSpace(strings.ToLower(raw))
+		if v == "1" || v == "true" || v == "on" || v == "yes" {
+			return true
+		}
+	}
+	return false
+}

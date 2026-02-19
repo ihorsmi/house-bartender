@@ -57,7 +57,7 @@ func (s *Server) ProductTogglePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = r.ParseForm()
-	avail := strings.TrimSpace(r.FormValue("is_available")) == "1"
+	avail := formBool(r, "is_available")
 	_ = s.App.Store().Q.ToggleProductAvailability(id, avail)
 
 	s.broadcastInventory()
@@ -176,7 +176,7 @@ func parseProductFormInput(r *http.Request) (productFormInput, bool) {
 		Category:      strings.TrimSpace(r.FormValue("category")),
 		AllergenFlags: strings.TrimSpace(r.FormValue("allergen_flags")),
 		Notes:         strings.TrimSpace(r.FormValue("notes")),
-		IsAvailable:   strings.TrimSpace(r.FormValue("is_available")) == "1",
+		IsAvailable:   formBool(r, "is_available"),
 	}
 
 	if in.Name == "" || in.Category == "" {

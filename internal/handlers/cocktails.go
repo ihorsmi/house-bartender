@@ -168,7 +168,7 @@ func (s *Server) CocktailTogglePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = r.ParseForm()
-	enabled := strings.TrimSpace(r.FormValue("is_enabled")) == "1"
+	enabled := formBool(r, "is_enabled")
 	_ = s.App.Store().Q.ToggleCocktailEnabled(id, enabled)
 	s.broadcastInventory()
 	s.redirect(w, r, "/bartender/cocktails")
@@ -202,7 +202,7 @@ func (s *Server) parseCocktailForm(w http.ResponseWriter, r *http.Request, id in
 		}
 	}
 	instr := strings.TrimSpace(r.FormValue("instructions"))
-	enabled := strings.TrimSpace(r.FormValue("is_enabled")) == "1"
+	enabled := formBool(r, "is_enabled")
 
 	if name == "" {
 		s.App.AddFlash(w, r, app.FlashError, "Name is required.")

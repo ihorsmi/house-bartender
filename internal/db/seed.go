@@ -197,6 +197,33 @@ func SeedCatalog(db *sql.DB) error {
 			Instructions: "Serve chilled.\nOptional: pour into a glass.",
 			IsEnabled: true,
 		},
+		{
+			Name: "Water",
+			Description: "Still water.",
+			Tags: "non-alcoholic,water,easy",
+			Difficulty: "easy",
+			PrepTimeMinutes: 1,
+			Instructions: "Serve chilled.",
+			IsEnabled: true,
+		},
+		{
+			Name: "Red Wine",
+			Description: "House red wine.",
+			Tags: "alcoholic,wine,easy",
+			Difficulty: "easy",
+			PrepTimeMinutes: 1,
+			Instructions: "Serve at room temperature or lightly chilled.",
+			IsEnabled: true,
+		},
+		{
+			Name: "Beer (Lager)",
+			Description: "House lager beer.",
+			Tags: "alcoholic,beer,easy",
+			Difficulty: "easy",
+			PrepTimeMinutes: 1,
+			Instructions: "Serve chilled.",
+			IsEnabled: true,
+		},
 	}
 
 	// quantities
@@ -284,6 +311,11 @@ func SeedCatalog(db *sql.DB) error {
 
 		// Non-Alcoholic Beer
 		{CocktailName: "Non-Alcoholic Beer", ProductName: "Non-Alcoholic Beer", Quantity: nil, Unit: "bottle", Required: true},
+
+		// Single-serve beverages from product inventory
+		{CocktailName: "Water", ProductName: "Water", Quantity: nil, Unit: "glass", Required: true},
+		{CocktailName: "Red Wine", ProductName: "Red Wine", Quantity: nil, Unit: "glass", Required: true},
+		{CocktailName: "Beer (Lager)", ProductName: "Beer (Lager)", Quantity: nil, Unit: "bottle", Required: true},
 	}
 
 	// Upsert products

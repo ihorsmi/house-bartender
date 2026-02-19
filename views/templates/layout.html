@@ -60,6 +60,8 @@
       {{template "bartender_products.html" .}}
     {{- else if eq .PageTemplate "bartender_cocktails.html" -}}
       {{template "bartender_cocktails.html" .}}
+    {{- else if eq .PageTemplate "cocktail_form.html" -}}
+      {{template "cocktail_form.html" .}}
     {{- else if eq .PageTemplate "bartender_orders.html" -}}
       {{template "bartender_orders.html" .}}
     {{- else if eq .PageTemplate "admin_users.html" -}}

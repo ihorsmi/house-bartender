@@ -45,11 +45,11 @@
                     data-hx-post="/bartender/cocktails/{{.ID}}/toggle"
                     data-hx-target="#cocktailsTable"
                     data-hx-swap="innerHTML">
-                <input type="hidden" name="enabled" value="{{if .IsEnabled}}0{{else}}1{{end}}">
+                <input type="hidden" name="is_enabled" value="{{if .IsEnabled}}0{{else}}1{{end}}">
                 <button class="btn btn--small" type="submit">{{if .IsEnabled}}Disable{{else}}Enable{{end}}</button>
               </form>
 
-              <a class="btn btn--small btn--ghost" href="/bartender/cocktails?edit={{.ID}}">Edit</a>
+              <a class="btn btn--small btn--ghost" href="/bartender/cocktails/{{.ID}}/edit">Edit</a>
 
               <form method="post"
                     action="/bartender/cocktails/{{.ID}}/delete"

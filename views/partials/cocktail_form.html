@@ -62,11 +62,12 @@
 
     <div class="ingredients">
       {{range .Page.IngRows}}
+        {{$row := .}}
         <div class="row row--gap ingrow">
           <select name="ingredient_product_id" class="grow">
             <option value="">Choose product…</option>
             {{range $.Page.Products}}
-              <option value="{{.ID}}" {{if eq .ID $.ProductID}}selected{{end}}>{{.Category}} — {{.Name}}</option>
+              <option value="{{.ID}}" {{if eq .ID $row.ProductID}}selected{{end}}>{{.Category}} — {{.Name}}</option>
             {{end}}
           </select>
           <input name="ingredient_quantity" class="input input--xs" placeholder="qty" value="{{.QuantityStr}}">
