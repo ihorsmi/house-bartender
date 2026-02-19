@@ -269,16 +269,26 @@ If you edited templates recently:
 
 ## Screenshots
 
-Add screenshots to:
+A quick look at the main flows in **House Bartender**:
 
-- `docs/screenshots/`
+### User portal
 
-Then embed here like:
+**User portal home / navigation**
+![User portal](docs/screenshots/userportal.png)
 
-```md
-![Bartender cocktails](docs/screenshots/bartender-cocktails.png)
-![Admin users](docs/screenshots/admin-users.png)
-```
+**Browse available cocktails**
+![User cocktails](docs/screenshots/usercocktails.png)
+
+**Place and track orders**
+![User orders](docs/screenshots/userorders.png)
+
+### Bartender portal
+
+**Manage products / ingredient availability**
+![Bartender products](docs/screenshots/bartenderproducts.png)
+
+**Live order queue**
+![Bartender orders](docs/screenshots/bartenderorders.png)
 
 ---
 
