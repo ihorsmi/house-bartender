@@ -292,15 +292,6 @@ A quick look at the main flows in **House Bartender**:
 
 ---
 
-## Roadmap ideas
-
-- Per-bartender notifications (only assigned bartender)
-- Inventory consumption on order completion
-- Printer-friendly “ticket” view for orders
-- Mobile-first queue UX improvements
-- Export/import catalog JSON
-
----
 
 ## Contributing
 
