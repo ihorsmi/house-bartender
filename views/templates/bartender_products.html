@@ -1,35 +1,43 @@
 {{define "bartender_products.html"}}
-<section class="card">
-  <div class="row row--gap">
-    <div class="grow">
-      <h1>Products (Ingredients)</h1>
-      <p class="muted">Availability is derived from stock if stock is set (stock &gt; 0).</p>
-    </div>
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">{{if and .User (eq .User.Role "ADMIN")}}Admin portal{{else}}Bartender portal{{end}}</p>
+    <h1>Ingredients inventory</h1>
+    <p class="page-header__body">Products are the reusable ingredients used in recipes. Track stock cleanly and make it obvious when availability comes from stock versus a manual switch.</p>
   </div>
-
-  {{template "product_form.html" .}}
 </section>
 
-<section class="card">
-  <div class="row row--gap row--wrap">
-    <div class="grow">
-      <h2>Quick Toggle / Search</h2>
+<section class="stack stack--lg">
+  <section class="panel panel--inventory-form">
+    {{template "product_form.html" .}}
+  </section>
+
+  <section class="panel">
+    <div class="inventory-toolbar">
+      <div class="inventory-toolbar__copy">
+        <h2>Inventory</h2>
+        <p class="muted">Search by ingredient name or category, update stock quickly, and use the manual availability toggle only when stock is left blank.</p>
+      </div>
+
+      <label class="field field--search inventory-toolbar__search">
+        <span class="field__label">Find an ingredient</span>
+        <input
+          id="prodSearch"
+          class="input input--search"
+          type="search"
+          name="q"
+          placeholder="Search by name or category"
+          value="{{.Page.Search}}"
+          data-hx-get="/partials/bartender/products"
+          data-hx-target="#productsTable"
+          data-hx-trigger="keyup delay:250ms"
+        >
+      </label>
     </div>
 
-    <input
-      id="prodSearch"
-      class="input input--search"
-      name="q"
-      placeholder="Search…"
-      value="{{.Page.Search}}"
-      data-hx-get="/partials/bartender/products"
-      data-hx-target="#productsTable"
-      data-hx-trigger="keyup delay:250ms"
-    >
-  </div>
-
-  <div id="productsTable">
-    {{template "products_table.html" .}}
-  </div>
+    <div id="productsTable">
+      {{template "products_table.html" .}}
+    </div>
+  </section>
 </section>
 {{end}}

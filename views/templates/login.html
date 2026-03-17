@@ -1,21 +1,22 @@
 {{define "login.html"}}
-<section class="card">
+<section class="panel panel--narrow">
   <h1>Login</h1>
   <p class="muted">Use your email + password. Demo users are seeded.</p>
 
   <form method="post" action="/login" class="form">
-    <label>
-      <span>Email</span>
+    <label class="field">
+      <span class="field__label">Email</span>
       <input name="email" type="email" autocomplete="username" required>
     </label>
 
-    <label>
-      <span>Password</span>
+    <label class="field">
+      <span class="field__label">Password</span>
       <input name="password" type="password" autocomplete="current-password" required>
     </label>
 
-    <button class="btn btn--primary" type="submit">Login</button>
+    <div class="panel__actions panel__actions--full">
+      <button class="btn btn--primary" type="submit">Login</button>
+    </div>
   </form>
-
 </section>
 {{end}}

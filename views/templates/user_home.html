@@ -1,11 +1,23 @@
 {{define "user_home.html"}}
-<section class="card">
-  <h1>Available cocktails</h1>
-  <p class="muted">Filters update instantly. Availability is based on required ingredients + cocktail enabled state.</p>
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">User portal</p>
+    <h1>Available cocktails</h1>
+    <p class="page-header__body">Filters update instantly. A cocktail is available only when it is enabled and every required ingredient is available.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <h2>Find a drink</h2>
+      <p class="muted">Mix and match filters to narrow the menu quickly.</p>
+    </div>
+  </div>
 
   <div class="filters">
-    <label>
-      <span>Alcohol</span>
+    <label class="field">
+      <span class="field__label">Alcohol</span>
       <select name="alc" id="f_alc" data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="change">
         <option value="all" {{if eq .Page.FilterAlcohol "all"}}selected{{end}}>All</option>
         <option value="alcohol" {{if eq .Page.FilterAlcohol "alcohol"}}selected{{end}}>Alcohol</option>
@@ -13,20 +25,20 @@
       </select>
     </label>
 
-    <label>
-      <span>Tag</span>
+    <label class="field">
+      <span class="field__label">Tag</span>
       <input name="tag" id="f_tag" placeholder="e.g. sour" value="{{.Page.FilterTag}}"
              data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="keyup delay:300ms">
     </label>
 
-    <label>
-      <span>Include ingredient</span>
+    <label class="field">
+      <span class="field__label">Include ingredient</span>
       <input name="include" id="f_include" placeholder="e.g. rum" value="{{.Page.IncludeIng}}"
              data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="keyup delay:300ms">
     </label>
 
-    <label>
-      <span>Exclude ingredient</span>
+    <label class="field">
+      <span class="field__label">Exclude ingredient</span>
       <input name="exclude" id="f_exclude" placeholder="e.g. tonic" value="{{.Page.ExcludeIng}}"
              data-hx-get="/partials/user/cocktails" data-hx-target="#cocktailGrid" data-hx-trigger="keyup delay:300ms">
     </label>

@@ -1,14 +1,23 @@
 {{define "products_table.html"}}
 {{with .Page}}
   {{if .Products}}
-    <div class="table-wrap">
-      <table class="table">
+    <div class="table-scroll">
+      <table class="data-table data-table--inventory">
+        <colgroup>
+          <col>
+          <col>
+          <col class="data-table__col--stock">
+          <col class="data-table__col--status">
+          {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
+            <col class="data-table__col--actions">
+          {{end}}
+        </colgroup>
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Ingredient</th>
             <th>Category</th>
             <th class="right">Stock</th>
-            <th>Status</th>
+            <th>Availability</th>
             {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
               <th class="right">Actions</th>
             {{end}}
@@ -17,58 +26,83 @@
         <tbody>
           {{range .Products}}
             <tr>
-              <td><strong>{{.Name}}</strong></td>
-              <td class="muted">{{.Category}}</td>
+              <td data-label="Ingredient">
+                <div class="cell-stack cell-stack--tight">
+                  <strong>{{.Name}}</strong>
+                  {{if .Notes}}<div class="muted tiny">{{.Notes}}</div>{{end}}
+                </div>
+              </td>
 
-              <td class="right">
+              <td data-label="Category">
+                <div class="cell-stack">
+                  <div>{{.Category}}</div>
+                  {{if .ABVPercent}}<div class="muted tiny">{{.ABVPercent}}% ABV</div>{{end}}
+                  {{if .AllergenFlags}}<div class="muted tiny">Allergens: {{.AllergenFlags}}</div>{{end}}
+                </div>
+              </td>
+
+              <td data-label="Stock" class="data-table__cell data-table__cell--stock">
                 {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
-                  <form class="row row--gap row--right"
-                        method="post"
-                        action="/bartender/products/{{.ID}}/stock"
-                        data-hx-post="/bartender/products/{{.ID}}/stock"
-                        data-hx-target="#productsTable"
-                        data-hx-swap="innerHTML">
-                    <input class="inp inp--sm right" name="stock_count" placeholder="(unset)"
-                           value="{{if .StockCount}}{{.StockCount}}{{end}}" style="width: 90px;">
-                    <button class="btn btn--sm" type="submit">Save</button>
-                  </form>
+                  <div class="cell-stack cell-stack--end">
+                    <span class="table-note table-note--plain">Set stock count</span>
+                    <form class="stock-editor"
+                          method="post"
+                          action="/bartender/products/{{.ID}}/stock"
+                          data-hx-post="/bartender/products/{{.ID}}/stock"
+                          data-hx-target="#productsTable"
+                          data-hx-swap="innerHTML">
+                      <input class="input input--stock right" name="stock_count" type="number" min="0" step="1" placeholder="Blank" value="{{if .StockCount}}{{.StockCount}}{{end}}">
+                      <button class="btn btn--small" type="submit">Save stock</button>
+                    </form>
+                    <div class="muted tiny">{{if .StockCount}}Availability follows this value automatically{{else}}Enter a value to start tracking stock, or leave it blank to use manual availability{{end}}</div>
+                  </div>
                 {{else}}
-                  {{if .StockCount}}{{.StockCount}}{{else}}—{{end}}
+                  {{if .StockCount}}{{.StockCount}}{{else}}Not tracked{{end}}
                 {{end}}
               </td>
 
-              <td>
-                {{if .ComputedAvail}}
-                  <span class="badge badge--ok">Available</span>
-                {{else}}
-                  <span class="badge">Unavailable</span>
-                {{end}}
+              <td data-label="Availability" class="data-table__cell data-table__cell--status">
+                <div class="cell-stack">
+                  {{if .ComputedAvail}}
+                    <span class="badge badge--ok">Available</span>
+                  {{else}}
+                    <span class="badge">Unavailable</span>
+                  {{end}}
+
+                  <div class="muted tiny">{{if .StockCount}}Controlled by stock{{else}}Controlled manually{{end}}</div>
+                </div>
               </td>
 
               {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
-                <td class="right">
-                  <div class="row row--gap row--right row--wrap">
-                    <!-- Toggle availability (only meaningful when stock_count is NULL) -->
-                    <form method="post"
-                          action="/bartender/products/{{.ID}}/toggle"
-                          data-hx-post="/bartender/products/{{.ID}}/toggle"
-                          data-hx-target="#productsTable"
-                          data-hx-swap="innerHTML">
-                      <input type="hidden" name="is_available" value="{{if .ComputedAvail}}0{{else}}1{{end}}">
-                      <button class="btn btn--sm" type="submit">
-                        {{if .ComputedAvail}}Set Unavailable{{else}}Set Available{{end}}
-                      </button>
-                    </form>
+                <td data-label="Actions" class="data-table__cell data-table__cell--actions">
+                  <div class="inventory-actions">
+                    {{if .StockCount}}
+                      <div class="inventory-actions__primary">
+                        <span class="table-note">Availability follows stock</span>
+                      </div>
+                    {{else}}
+                      <form class="inventory-actions__primary"
+                            method="post"
+                            action="/bartender/products/{{.ID}}/toggle"
+                            data-hx-post="/bartender/products/{{.ID}}/toggle"
+                            data-hx-target="#productsTable"
+                            data-hx-swap="innerHTML">
+                        <input type="hidden" name="is_available" value="{{if .ComputedAvail}}0{{else}}1{{end}}">
+                        <button class="btn btn--small btn--primary" type="submit">
+                          {{if .ComputedAvail}}Mark unavailable{{else}}Mark available{{end}}
+                        </button>
+                      </form>
+                    {{end}}
 
-                    <a class="btn btn--sm btn--ghost" href="/bartender/products/{{.ID}}/edit">Edit</a>
+                    <a class="btn btn--small" href="/bartender/products/{{.ID}}/edit">Edit</a>
 
                     <form method="post"
                           action="/bartender/products/{{.ID}}/delete"
                           data-hx-post="/bartender/products/{{.ID}}/delete"
                           data-hx-target="#productsTable"
                           data-hx-swap="innerHTML"
-                          onsubmit="return confirm('Delete product? This may affect cocktails using it.');">
-                      <button class="btn btn--sm btn--danger" type="submit">Delete</button>
+                          onsubmit="return confirm('Delete ingredient? This may affect cocktails using it.');">
+                      <button class="btn btn--small btn--danger" type="submit">Delete</button>
                     </form>
                   </div>
                 </td>
@@ -79,9 +113,15 @@
       </table>
     </div>
   {{else}}
-    <p class="muted">No products found.</p>
+    <section class="empty-state">
+      <h3 class="empty-state__title">No ingredients found</h3>
+      <p class="empty-state__body">{{if .Search}}Try a broader search or create the ingredient first.{{else}}Create your first ingredient to start building cocktails.{{end}}</p>
+    </section>
   {{end}}
 {{else}}
-  <p class="muted">No products found.</p>
+  <section class="empty-state">
+    <h3 class="empty-state__title">No ingredients found</h3>
+    <p class="empty-state__body">There is nothing to show right now.</p>
+  </section>
 {{end}}
 {{end}}

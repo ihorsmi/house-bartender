@@ -31,13 +31,44 @@ type CocktailFormPage struct {
 	IngRows  []CocktailFormRow
 }
 
+func defaultCocktailFormRows(count int) []CocktailFormRow {
+	if count < 1 {
+		count = 1
+	}
+
+	rows := make([]CocktailFormRow, count)
+	for i := range rows {
+		rows[i].Required = true
+	}
+	return rows
+}
+
+func cocktailFormRowsFromIngredients(ings []db.CocktailIngredient) []CocktailFormRow {
+	rows := make([]CocktailFormRow, 0, len(ings)+1)
+	for _, ing := range ings {
+		q := ""
+		if ing.Quantity != nil {
+			q = fmt.Sprintf("%.0f", *ing.Quantity)
+		}
+		rows = append(rows, CocktailFormRow{
+			ProductID:   ing.ProductID,
+			QuantityStr: q,
+			Unit:        ing.Unit,
+			Required:    ing.Required,
+		})
+	}
+
+	rows = append(rows, CocktailFormRow{Required: true})
+	return rows
+}
+
 func (s *Server) CocktailNewGet(w http.ResponseWriter, r *http.Request) {
 	products, _ := s.App.Store().Q.ListProducts("")
 	page := CocktailFormPage{
 		Mode:     "new",
 		Cocktail: db.Cocktail{Difficulty: "easy", PrepTimeMinutes: 5, IsEnabled: true},
 		Products: products,
-		IngRows:  make([]CocktailFormRow, 10),
+		IngRows:  defaultCocktailFormRows(3),
 	}
 	s.renderLayout(w, r, "New Cocktail", "cocktail_form.html", page)
 }
@@ -91,26 +122,12 @@ func (s *Server) CocktailEditGet(w http.ResponseWriter, r *http.Request) {
 	products, _ := s.App.Store().Q.ListProducts("")
 	ings, _ := s.App.Store().Q.GetCocktailIngredients(id)
 
-	rows := make([]CocktailFormRow, 10)
-	for i := 0; i < len(ings) && i < len(rows); i++ {
-		q := ""
-		if ings[i].Quantity != nil {
-			q = fmt.Sprintf("%.0f", *ings[i].Quantity)
-		}
-		rows[i] = CocktailFormRow{
-			ProductID:   ings[i].ProductID,
-			QuantityStr: q,
-			Unit:        ings[i].Unit,
-			Required:    ings[i].Required,
-		}
-	}
-
 	page := CocktailFormPage{
 		Mode:     "edit",
 		Cocktail: *c,
 		Tags:     c.Tags,
 		Products: products,
-		IngRows:  rows,
+		IngRows:  cocktailFormRowsFromIngredients(ings),
 	}
 	s.renderLayout(w, r, "Edit Cocktail", "cocktail_form.html", page)
 }
@@ -167,6 +184,7 @@ func (s *Server) CocktailTogglePost(w http.ResponseWriter, r *http.Request) {
 		s.redirect(w, r, "/bartender/cocktails")
 		return
 	}
+
 	_ = r.ParseForm()
 	enabled := formBool(r, "is_enabled")
 	_ = s.App.Store().Q.ToggleCocktailEnabled(id, enabled)

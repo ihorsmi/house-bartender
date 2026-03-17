@@ -113,6 +113,10 @@ func (s *Server) AdminUserUpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if role != app.RoleBartender {
+		_ = s.App.Store().Q.SetUserDuty(id, false)
+	}
+
 	if strings.TrimSpace(pw) != "" {
 		hash, err := app.HashPassword(pw)
 		if err != nil {
@@ -164,6 +168,18 @@ func (s *Server) AdminUserDutyPost(w http.ResponseWriter, r *http.Request) {
 		s.redirect(w, r, "/admin/users")
 		return
 	}
+
+	target, _ := s.App.Store().Q.GetUserByID(id)
+	if target == nil {
+		s.redirect(w, r, "/admin/users")
+		return
+	}
+	if target.Role != app.RoleBartender {
+		s.App.AddFlash(w, r, app.FlashInfo, "Duty applies only to bartender accounts.")
+		s.redirect(w, r, "/admin/users")
+		return
+	}
+
 	_ = r.ParseForm()
 	onDuty := strings.TrimSpace(r.FormValue("on_duty")) == "1"
 	_ = s.App.Store().Q.SetUserDuty(id, onDuty)

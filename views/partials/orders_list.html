@@ -1,101 +1,119 @@
 {{define "orders_list.html"}}
 {{if eq .Page.Mode "user"}}
-  {{range .Page.Orders}}
-    <article class="card card--compact">
-      <div class="row row--gap">
-        <div class="grow">
-          <div class="row row--gap">
-            <h3 class="m0">{{.CocktailName}}</h3>
-            <span class="pill pill--soft">{{.Status}}</span>
-          </div>
-          <div class="muted tiny">
-            Qty: {{.Quantity}} • Location: {{.Location}} • Placed: {{fmtTime .CreatedAt}}
-          </div>
-          {{if .AssignedBartenderName}}
-            <div class="muted tiny">Bartender: {{.AssignedBartenderName}}</div>
-          {{end}}
-          {{if .Notes}}<div class="muted">{{.Notes}}</div>{{end}}
-        </div>
-        {{if .CocktailImagePath}}<img class="thumb" src="{{.CocktailImagePath}}" alt="cocktail image">{{end}}
-      </div>
-
-      <div class="timeline">
-        {{with (index $.Page.Events .ID)}}
-          {{range .}}
-            <div class="timeline__item">
-              <div class="timeline__dot"></div>
-              <div class="timeline__body">
-                <div class="timeline__line">
-                  <strong>{{.ToStatus}}</strong>
-                  <span class="muted tiny">{{fmtTime .CreatedAt}}</span>
-                </div>
-                {{if .ChangedByName}}<div class="muted tiny">by {{.ChangedByName}}</div>{{end}}
+  {{if .Page.Orders}}
+    <div class="orders-grid orders-grid--history">
+      {{range .Page.Orders}}
+        <article class="card card--compact order-card">
+          <div class="order-card__header">
+            <div class="grow">
+              <div class="row row--gap row--wrap">
+                <h3 class="m0">{{.CocktailName}}</h3>
+                <span class="pill pill--soft">{{humanizeEnum .Status}}</span>
               </div>
+              <div class="muted tiny">Qty: {{.Quantity}} - Location: {{.Location}} - Placed: {{fmtTime .CreatedAt}}</div>
+              {{if .AssignedBartenderName}}
+                <div class="muted tiny">Bartender: {{.AssignedBartenderName}}</div>
+              {{end}}
+              {{if .Notes}}<p class="muted m0">{{.Notes}}</p>{{end}}
             </div>
-          {{end}}
-        {{end}}
-      </div>
-    </article>
+
+            {{if .CocktailImagePath}}<img class="thumb" src="{{.CocktailImagePath}}" alt="Cocktail image">{{end}}
+          </div>
+
+          <div class="timeline">
+            {{with (index $.Page.Events .ID)}}
+              {{range .}}
+                <div class="timeline__item">
+                  <div class="timeline__dot"></div>
+                  <div class="timeline__body">
+                    <div class="timeline__line">
+                      <strong>{{humanizeEnum .ToStatus}}</strong>
+                      <span class="muted tiny">{{fmtTime .CreatedAt}}</span>
+                    </div>
+                    {{if .ChangedByName}}<div class="muted tiny">by {{.ChangedByName}}</div>{{end}}
+                  </div>
+                </div>
+              {{end}}
+            {{end}}
+          </div>
+        </article>
+      {{end}}
+    </div>
   {{end}}
 
   {{if not .Page.Orders}}
-    <div class="card"><p class="muted">No orders yet.</p></div>
+    <section class="empty-state">
+      <h3 class="empty-state__title">No orders yet</h3>
+      <p class="empty-state__body">Once you place a drink order, it will show up here with live status updates.</p>
+    </section>
   {{end}}
 {{else}}
-  {{/* bartender queue */}}
-  {{range .Page.Orders}}
-    <article class="card card--compact">
-      <div class="row row--gap">
-        <div class="grow">
-          <div class="row row--gap">
-            <h3 class="m0">#{{.ID}} — {{.CocktailName}}</h3>
-            <span class="pill pill--soft">{{.Status}}</span>
-            <span class="muted tiny">({{since .CreatedAt $.Now}})</span>
+  {{if .Page.Orders}}
+    <div class="orders-grid orders-grid--queue">
+      {{range .Page.Orders}}
+        <article class="card card--compact order-card order-card--queue">
+          <div class="order-card__header">
+            <div class="grow">
+              <div class="row row--gap row--wrap">
+                <h3 class="m0">#{{.ID}} - {{.CocktailName}}</h3>
+                <span class="pill pill--soft">{{humanizeEnum .Status}}</span>
+                <span class="muted tiny">{{since .CreatedAt $.Now}} ago</span>
+              </div>
+              <div class="muted tiny">Guest: {{.UserDisplayName}} - Qty: {{.Quantity}} - Location: {{.Location}}</div>
+              {{if .AssignedBartenderName}}
+                <div class="muted tiny">Assigned: {{.AssignedBartenderName}}</div>
+              {{end}}
+              {{if .Notes}}<p class="muted m0">{{.Notes}}</p>{{end}}
+            </div>
           </div>
-          <div class="muted tiny">User: {{.UserDisplayName}} • Qty: {{.Quantity}} • Location: {{.Location}}</div>
-          {{if .AssignedBartenderName}}
-            <div class="muted tiny">Assigned: {{.AssignedBartenderName}}</div>
-          {{end}}
-          {{if .Notes}}<div class="muted">{{.Notes}}</div>{{end}}
-        </div>
-      </div>
 
-      <div class="row row--gap">
-        {{if eq .Status "PLACED"}}
-          <form method="post" action="/bartender/orders/{{.ID}}/accept">
-            <button class="btn btn--small btn--primary" type="submit">Accept</button>
-          </form>
-        {{end}}
-
-        <form method="post" action="/bartender/orders/{{.ID}}/assign" class="row row--gap">
-          <select name="bartender_id" class="input input--xs">
-            <option value="">Assign to me</option>
-            {{range $.Page.Bartenders}}
-              <option value="{{.ID}}">{{.DisplayName}}</option>
+          <div class="order-card__actions">
+            {{if eq .Status "PLACED"}}
+              <form method="post" action="/bartender/orders/{{.ID}}/accept" class="order-action order-action--simple">
+                <button class="btn btn--small btn--primary" type="submit">Accept order</button>
+              </form>
             {{end}}
-          </select>
-          <button class="btn btn--small" type="submit">Assign</button>
-        </form>
 
-        <form method="post" action="/bartender/orders/{{.ID}}/status" class="row row--gap">
-          <select name="to_status" class="input input--xs">
-            {{if eq .Status "PLACED"}}<option value="ACCEPTED">ACCEPTED</option>{{end}}
-            {{if eq .Status "ACCEPTED"}}<option value="IN_PROGRESS">IN_PROGRESS</option>{{end}}
-            {{if eq .Status "IN_PROGRESS"}}<option value="READY">READY</option>{{end}}
-            {{if eq .Status "READY"}}<option value="DELIVERED">DELIVERED</option>{{end}}
-          </select>
-          <button class="btn btn--small" type="submit">Update</button>
-        </form>
+            <form method="post" action="/bartender/orders/{{.ID}}/assign" class="order-action order-action--control">
+              <label class="field">
+                <span class="field__label">Assign bartender</span>
+                <select name="bartender_id" class="input">
+                  <option value="">Assign to me</option>
+                  {{range $.Page.Bartenders}}
+                    <option value="{{.ID}}">{{.DisplayName}}</option>
+                  {{end}}
+                </select>
+              </label>
+              <button class="btn btn--small" type="submit">Save assignment</button>
+            </form>
 
-        <form method="post" action="/bartender/orders/{{.ID}}/cancel" onsubmit="return confirm('Cancel order?')">
-          <button class="btn btn--small btn--danger" type="submit">Cancel</button>
-        </form>
-      </div>
-    </article>
+            <form method="post" action="/bartender/orders/{{.ID}}/status" class="order-action order-action--control">
+              <label class="field">
+                <span class="field__label">Next status</span>
+                <select name="to_status" class="input">
+                  {{if eq .Status "PLACED"}}<option value="ACCEPTED">Accepted</option>{{end}}
+                  {{if eq .Status "ACCEPTED"}}<option value="IN_PROGRESS">In progress</option>{{end}}
+                  {{if eq .Status "IN_PROGRESS"}}<option value="READY">Ready</option>{{end}}
+                  {{if eq .Status "READY"}}<option value="DELIVERED">Delivered</option>{{end}}
+                </select>
+              </label>
+              <button class="btn btn--small" type="submit">Update status</button>
+            </form>
+
+            <form method="post" action="/bartender/orders/{{.ID}}/cancel" class="order-action order-action--simple" onsubmit="return confirm('Cancel order?')">
+              <button class="btn btn--small btn--danger" type="submit">Cancel order</button>
+            </form>
+          </div>
+        </article>
+      {{end}}
+    </div>
   {{end}}
 
   {{if not .Page.Orders}}
-    <div class="card"><p class="muted">Queue is empty.</p></div>
+    <section class="empty-state">
+      <h3 class="empty-state__title">Queue is clear</h3>
+      <p class="empty-state__body">New drink orders will appear here automatically as soon as they are placed.</p>
+    </section>
   {{end}}
 {{end}}
 {{end}}

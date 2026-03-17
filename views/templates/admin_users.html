@@ -1,60 +1,102 @@
 {{define "admin_users.html"}}
-<section class="card">
-  <h1>Users & Roles</h1>
-  <p class="muted">Create, enable/disable accounts, assign roles, set bartender duty.</p>
-
-  {{template "user_form.html" .}}
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">Admin portal</p>
+    <h1>Users and roles</h1>
+    <p class="page-header__body">Create accounts, control access, and manage bartender duty from one clear workspace.</p>
+  </div>
 </section>
 
-<section class="card">
-  <h2>All users</h2>
+<section class="page-grid page-grid--aside">
+  <section class="panel panel--sticky">
+    {{template "user_form.html" .}}
+  </section>
 
-  <div class="table">
-    <div class="table__head">
-      <div>Email</div><div>Name</div><div>Role</div><div>Active</div><div>Duty</div><div>Actions</div>
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <h2>All users</h2>
+        <p class="muted">Update profile details, enable or disable access, switch duty status, and set a fresh password when needed.</p>
+      </div>
     </div>
 
-    {{range .Page.Users}}
-      <form method="post" action="/admin/users/{{.ID}}" class="table__row table__row--users">
-        <input name="email" value="{{.Email}}">
-        <input name="display_name" value="{{.DisplayName}}">
+    <div class="table">
+      <div class="table__head table__head--users">
+        <div>Email</div>
+        <div>Name</div>
+        <div>Role</div>
+        <div>Active</div>
+        <div>Bartender duty</div>
+      </div>
 
-        <select name="role">
-          <option value="USER" {{if eq .Role "USER"}}selected{{end}}>USER</option>
-          <option value="BARTENDER" {{if eq .Role "BARTENDER"}}selected{{end}}>BARTENDER</option>
-          <option value="ADMIN" {{if eq .Role "ADMIN"}}selected{{end}}>ADMIN</option>
-        </select>
+      {{range .Page.Users}}
+        <form method="post" action="/admin/users/{{.ID}}" class="table__row table__row--users">
+          <label class="field table-field">
+            <span class="table-field__label">Email</span>
+            <input name="email" type="email" value="{{.Email}}">
+          </label>
 
-        <div class="pill {{if .IsActive}}pill--ok{{else}}pill--bad{{end}}">
-          {{if .IsActive}}yes{{else}}no{{end}}
-        </div>
+          <label class="field table-field">
+            <span class="table-field__label">Display name</span>
+            <input name="display_name" value="{{.DisplayName}}">
+          </label>
 
-        <div class="pill {{if .OnDuty}}pill--ok{{else}}pill--soft{{end}}">
-          {{if .OnDuty}}on{{else}}off{{end}}
-        </div>
+          <label class="field table-field">
+            <span class="table-field__label">Role</span>
+            <select name="role">
+              <option value="USER" {{if eq .Role "USER"}}selected{{end}}>User</option>
+              <option value="BARTENDER" {{if eq .Role "BARTENDER"}}selected{{end}}>Bartender</option>
+              <option value="ADMIN" {{if eq .Role "ADMIN"}}selected{{end}}>Admin</option>
+            </select>
+          </label>
 
-        <div class="table__actions">
-          <!-- values for toggle endpoints -->
-          <input type="hidden" name="active" value="{{if .IsActive}}0{{else}}1{{end}}">
-          <input type="hidden" name="on_duty" value="{{if .OnDuty}}0{{else}}1{{end}}">
-
-          <button class="btn btn--small" type="submit">Save</button>
-
-          <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/toggle">
-            {{if .IsActive}}Disable{{else}}Enable{{end}}
-          </button>
-
-          <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/duty">
-            Toggle duty
-          </button>
-
-          <div class="pwgroup">
-            <input name="password" placeholder="New password" type="password" minlength="8">
-            <button class="btn btn--small" type="submit">Set password</button>
+          <div class="table__status table-field table-field--status">
+            <span class="table-field__label">Access</span>
+            <div class="pill {{if .IsActive}}pill--ok{{else}}pill--bad{{end}}">
+              {{if .IsActive}}Active{{else}}Disabled{{end}}
+            </div>
           </div>
-        </div>
-      </form>
-    {{end}}
-  </div>
+
+          <div class="table__status table-field table-field--status">
+            <span class="table-field__label">Duty</span>
+            {{if eq .Role "BARTENDER"}}
+              <div class="pill {{if .OnDuty}}pill--ok{{else}}pill--soft{{end}}">
+                {{if .OnDuty}}On duty{{else}}Off duty{{end}}
+              </div>
+            {{else}}
+              <div class="pill pill--soft">Not applicable</div>
+            {{end}}
+          </div>
+
+          <div class="table__actions table__actions--users">
+            <div class="table__actions-group">
+              <button class="btn btn--small btn--primary" type="submit">Save details</button>
+
+              <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/toggle">
+                {{if .IsActive}}Disable access{{else}}Enable access{{end}}
+              </button>
+
+              {{if eq .Role "BARTENDER"}}
+                <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/duty">
+                  {{if .OnDuty}}Set off duty{{else}}Set on duty{{end}}
+                </button>
+              {{end}}
+            </div>
+
+            <div class="field table-field table-field--password">
+              <span class="table-field__label">Reset password</span>
+              <div class="pwgroup pwgroup--stacked">
+                <input name="password" placeholder="New password" type="password" minlength="8">
+                <button class="btn btn--small" type="submit">Set password</button>
+              </div>
+            </div>
+
+            <input type="hidden" name="active" value="{{if .IsActive}}0{{else}}1{{end}}">
+            <input type="hidden" name="on_duty" value="{{if .OnDuty}}0{{else}}1{{end}}">
+          </div>
+        </form>
+      {{end}}
+    </div>
+  </section>
 </section>
 {{end}}

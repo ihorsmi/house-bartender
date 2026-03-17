@@ -4,76 +4,113 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>{{if .Title}}{{.Title}} — {{end}}House Bartender</title>
+  <meta name="color-scheme" content="light dark"/>
+  <title>{{if .Title}}{{.Title}} - {{end}}House Bartender</title>
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("hb-theme");
+        var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.setAttribute("data-theme", stored || (systemDark ? "dark" : "light"));
+      } catch (err) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 
 <body data-path="{{.Path}}" {{if .User}}data-role="{{.User.Role}}" data-user="{{.User.ID}}"{{end}}>
   <header class="topbar">
-    <div class="brand">
-      <div class="brand__title">House Bartender</div>
-      <div class="brand__sub">Offline • SQLite • SSE</div>
-    </div>
+    <div class="topbar__inner container container--shell">
+      <div class="brand">
+        <a class="brand__title" href="{{if .User}}{{if eq .User.Role "USER"}}/{{else if eq .User.Role "BARTENDER"}}/bartender{{else}}/admin/users{{end}}{{else}}/login{{end}}">House Bartender</a>
+        <div class="brand__sub">Cocktails, stock, and orders that stay easy to manage.</div>
+      </div>
 
-    <nav class="nav">
-      {{if .User}}
-        {{if eq .User.Role "USER"}}
-          <a class="nav__link" href="/">Cocktails</a>
-          <a class="nav__link" href="/orders">My orders</a>
-        {{else if eq .User.Role "BARTENDER"}}
-          <a class="nav__link" href="/bartender/cocktails">Cocktails</a>
-          <a class="nav__link" href="/bartender/products">Products</a>
-          <a class="nav__link" href="/bartender/orders">Queue</a>
-        {{else if eq .User.Role "ADMIN"}}
-          <a class="nav__link" href="/admin/users">Users</a>
-          <a class="nav__link" href="/admin/settings">Settings</a>
-          <a class="nav__link" href="/bartender/cocktails">Cocktails</a>
-          <a class="nav__link" href="/bartender/products">Products</a>
-          <a class="nav__link" href="/bartender/orders">Queue</a>
+      <div class="topbar__actions">
+        {{if .User}}
+          <div class="session-pill">
+            <div class="session-pill__name">{{.User.DisplayName}}</div>
+            <div class="session-pill__meta">
+              {{if eq .User.Role "USER"}}User portal{{else if eq .User.Role "BARTENDER"}}Bartender portal{{else}}Admin portal{{end}}
+            </div>
+          </div>
         {{end}}
 
-        <form method="post" action="/logout" class="nav__inline">
-          <button class="nav__btn" type="submit">Logout</button>
-        </form>
-      {{else}}
-        <a class="nav__link" href="/login">Login</a>
-      {{end}}
-    </nav>
+        <nav class="nav" aria-label="Primary">
+          {{if .User}}
+            {{if eq .User.Role "USER"}}
+              <a class="nav__link {{if or (eq .Path "/") (hasPrefix .Path "/cocktails/")}}nav__link--active{{end}}" href="/">Cocktails</a>
+              <a class="nav__link {{if eq .Path "/orders"}}nav__link--active{{end}}" href="/orders">My orders</a>
+            {{else if eq .User.Role "BARTENDER"}}
+              <a class="nav__link {{if eq .Path "/bartender"}}nav__link--active{{end}}" href="/bartender">Dashboard</a>
+              <a class="nav__link {{if hasPrefix .Path "/bartender/cocktails"}}nav__link--active{{end}}" href="/bartender/cocktails">Cocktails</a>
+              <a class="nav__link {{if hasPrefix .Path "/bartender/products"}}nav__link--active{{end}}" href="/bartender/products">Products</a>
+              <a class="nav__link {{if hasPrefix .Path "/bartender/orders"}}nav__link--active{{end}}" href="/bartender/orders">Queue</a>
+            {{else if eq .User.Role "ADMIN"}}
+              <a class="nav__link {{if hasPrefix .Path "/admin/users"}}nav__link--active{{end}}" href="/admin/users">Users</a>
+              <a class="nav__link {{if hasPrefix .Path "/admin/settings"}}nav__link--active{{end}}" href="/admin/settings">Settings</a>
+              <a class="nav__link {{if eq .Path "/bartender"}}nav__link--active{{end}}" href="/bartender">Dashboard</a>
+              <a class="nav__link {{if hasPrefix .Path "/bartender/cocktails"}}nav__link--active{{end}}" href="/bartender/cocktails">Cocktails</a>
+              <a class="nav__link {{if hasPrefix .Path "/bartender/products"}}nav__link--active{{end}}" href="/bartender/products">Products</a>
+              <a class="nav__link {{if hasPrefix .Path "/bartender/orders"}}nav__link--active{{end}}" href="/bartender/orders">Queue</a>
+            {{end}}
+          {{else}}
+            <a class="nav__link {{if eq .Path "/login"}}nav__link--active{{end}}" href="/login">Login</a>
+          {{end}}
+        </nav>
+
+        <div class="nav__controls">
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle color theme">
+            <span class="theme-toggle__label" data-theme-toggle-label>Theme</span>
+          </button>
+
+          {{if .User}}
+            <form method="post" action="/logout" class="nav__inline">
+              <button class="nav__btn" type="submit">Logout</button>
+            </form>
+          {{end}}
+        </div>
+      </div>
+    </div>
   </header>
 
-  <main class="container">
+  <main class="container container--shell container--page app-shell">
     {{template "flash.html" .}}
 
-    {{- if eq .PageTemplate "login.html" -}}
-      {{template "login.html" .}}
-    {{- else if eq .PageTemplate "onboarding.html" -}}
-      {{template "onboarding.html" .}}
-    {{- else if eq .PageTemplate "user_home.html" -}}
-      {{template "user_home.html" .}}
-    {{- else if eq .PageTemplate "cocktail_detail.html" -}}
-      {{template "cocktail_detail.html" .}}
-    {{- else if eq .PageTemplate "user_orders.html" -}}
-      {{template "user_orders.html" .}}
-    {{- else if eq .PageTemplate "bartender_dashboard.html" -}}
-      {{template "bartender_dashboard.html" .}}
-    {{- else if eq .PageTemplate "bartender_products.html" -}}
-      {{template "bartender_products.html" .}}
-    {{- else if eq .PageTemplate "bartender_cocktails.html" -}}
-      {{template "bartender_cocktails.html" .}}
-    {{- else if eq .PageTemplate "cocktail_form.html" -}}
-      {{template "cocktail_form.html" .}}
-    {{- else if eq .PageTemplate "bartender_orders.html" -}}
-      {{template "bartender_orders.html" .}}
-    {{- else if eq .PageTemplate "admin_users.html" -}}
-      {{template "admin_users.html" .}}
-    {{- else if eq .PageTemplate "admin_settings.html" -}}
-      {{template "admin_settings.html" .}}
-    {{- else -}}
-      <section class="card">
-        <h2>Template error</h2>
-        <p class="muted">Unknown PageTemplate: <code>{{.PageTemplate}}</code></p>
-      </section>
-    {{- end -}}
+    <div class="page-stack">
+      {{- if eq .PageTemplate "login.html" -}}
+        {{template "login.html" .}}
+      {{- else if eq .PageTemplate "onboarding.html" -}}
+        {{template "onboarding.html" .}}
+      {{- else if eq .PageTemplate "user_home.html" -}}
+        {{template "user_home.html" .}}
+      {{- else if eq .PageTemplate "cocktail_detail.html" -}}
+        {{template "cocktail_detail.html" .}}
+      {{- else if eq .PageTemplate "user_orders.html" -}}
+        {{template "user_orders.html" .}}
+      {{- else if eq .PageTemplate "bartender_dashboard.html" -}}
+        {{template "bartender_dashboard.html" .}}
+      {{- else if eq .PageTemplate "bartender_products.html" -}}
+        {{template "bartender_products.html" .}}
+      {{- else if eq .PageTemplate "bartender_cocktails.html" -}}
+        {{template "bartender_cocktails.html" .}}
+      {{- else if eq .PageTemplate "cocktail_form.html" -}}
+        {{template "cocktail_form.html" .}}
+      {{- else if eq .PageTemplate "bartender_orders.html" -}}
+        {{template "bartender_orders.html" .}}
+      {{- else if eq .PageTemplate "admin_users.html" -}}
+        {{template "admin_users.html" .}}
+      {{- else if eq .PageTemplate "admin_settings.html" -}}
+        {{template "admin_settings.html" .}}
+      {{- else -}}
+        <section class="panel empty-state">
+          <h2 class="empty-state__title">Template error</h2>
+          <p class="empty-state__body">Unknown page template: <code>{{.PageTemplate}}</code></p>
+        </section>
+      {{- end -}}
+    </div>
   </main>
 
   <script src="/static/htmx.min.js" defer></script>

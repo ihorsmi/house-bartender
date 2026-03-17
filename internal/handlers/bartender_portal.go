@@ -8,11 +8,11 @@ import (
 )
 
 type BartenderDashboardPage struct {
-	OnDuty         bool
-	CountPlaced    int
-	CountAccepted  int
+	OnDuty          bool
+	CountPlaced     int
+	CountAccepted   int
 	CountInProgress int
-	CountReady     int
+	CountReady      int
 }
 
 type BartenderProductsPage struct {
@@ -38,10 +38,10 @@ type BartenderCocktailsPage struct {
 }
 
 type BartenderOrdersPage struct {
-	Mode      string // "bartender"
-	Orders    []db.Order
+	Mode       string // "bartender"
+	Orders     []db.Order
 	Bartenders []db.User
-	Events    map[int64][]db.OrderEvent // optional
+	Events     map[int64][]db.OrderEvent // optional
 }
 
 func (s *Server) BartenderDashboardGet(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func (s *Server) BartenderProductsGet(w http.ResponseWriter, r *http.Request) {
 		Products: products,
 		Form:     defaultProductFormState(),
 	}
-	s.renderLayout(w, r, "Products", "bartender_products.html", page)
+	s.renderLayout(w, r, "Ingredients", "bartender_products.html", page)
 }
 
 func (s *Server) BartenderProductsPartialGet(w http.ResponseWriter, r *http.Request) {

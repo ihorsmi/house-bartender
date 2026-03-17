@@ -1,26 +1,38 @@
 {{define "user_form.html"}}
-<h2>Create user</h2>
+<div class="panel__header">
+  <div>
+    <h2>Create user</h2>
+    <p class="muted">Add a guest, bartender, or admin account with the access they need from day one.</p>
+  </div>
+</div>
+
 <form method="post" action="/admin/users" class="form form--grid">
-  <label>
-    <span>Email</span>
-    <input name="email" type="email" required>
+  <label class="field">
+    <span class="field__label">Email</span>
+    <input name="email" type="email" placeholder="person@example.com" required>
   </label>
-  <label>
-    <span>Display name</span>
-    <input name="display_name" required>
+
+  <label class="field">
+    <span class="field__label">Display name</span>
+    <input name="display_name" placeholder="Jordan" required>
   </label>
-  <label>
-    <span>Role</span>
+
+  <label class="field">
+    <span class="field__label">Role</span>
     <select name="role">
-      <option value="USER">USER</option>
-      <option value="BARTENDER">BARTENDER</option>
-      <option value="ADMIN">ADMIN</option>
+      <option value="USER">User</option>
+      <option value="BARTENDER">Bartender</option>
+      <option value="ADMIN">Admin</option>
     </select>
   </label>
-  <label>
-    <span>Password</span>
-    <input name="password" type="password" minlength="8" required>
+
+  <label class="field">
+    <span class="field__label">Password</span>
+    <input name="password" type="password" minlength="8" placeholder="At least 8 characters" required>
   </label>
-  <button class="btn btn--primary" type="submit">Create</button>
+
+  <div class="panel__actions panel__actions--full span2">
+    <button class="btn btn--primary" type="submit">Create user</button>
+  </div>
 </form>
 {{end}}

@@ -3,34 +3,38 @@
 {{with .Page}}
   {{if .Cocktails}}
     {{range .Cocktails}}
-      <article class="card card--compact">
-        <div class="cocktailRow">
-          <div class="grow">
-            <div class="row row--gap row--wrap">
-              <strong>{{.Name}}</strong>
+      <article class="card card--compact cocktail-card">
+        <div class="cocktail-card__inner">
+          <div class="cocktail-card__summary">
+            <div class="cocktail-card__header row row--gap row--wrap">
+              <h3 class="m0">{{.Name}}</h3>
 
-              {{if .ComputedAvail}}
-                <span class="badge badge--ok">Available</span>
-              {{else}}
-                <span class="badge">Unavailable</span>
-              {{end}}
+              <div class="cocktail-card__state">
+                {{if .ComputedAvail}}
+                  <span class="badge badge--ok">Orderable</span>
+                {{else}}
+                  <span class="badge">Blocked</span>
+                {{end}}
 
-              {{if .IsEnabled}}
-                <span class="badge badge--ok">Enabled</span>
-              {{else}}
-                <span class="badge">Disabled</span>
-              {{end}}
+                {{if .IsEnabled}}
+                  <span class="badge badge--info">Menu on</span>
+                {{else}}
+                  <span class="badge">Menu off</span>
+                {{end}}
+              </div>
             </div>
 
-            {{if .Description}}<p class="muted">{{.Description}}</p>{{end}}
+            {{if .Description}}<p class="muted cocktail-card__description">{{.Description}}</p>{{end}}
 
-            <div class="row row--gap row--wrap muted">
-              {{if .Difficulty}}<span>Difficulty: {{.Difficulty}}</span>{{end}}
-              {{if gt .PrepTimeMinutes 0}}<span>Prep: {{.PrepTimeMinutes}}m</span>{{end}}
+            <div class="cocktail-card__meta">
+              {{if .Difficulty}}<span class="pill pill--soft">{{humanizeEnum .Difficulty}}</span>{{end}}
+              {{if gt .PrepTimeMinutes 0}}<span class="pill pill--soft">{{.PrepTimeMinutes}} min prep</span>{{end}}
+              {{if and .IsEnabled (not .ComputedAvail)}}<span class="pill">Waiting on required ingredients</span>{{end}}
+              {{if not .IsEnabled}}<span class="pill">Hidden from menu</span>{{end}}
             </div>
 
             {{if .Tags}}
-              <div class="row row--gap row--wrap">
+              <div class="chips">
                 {{range (splitCSV .Tags)}}
                   <span class="tag">{{.}}</span>
                 {{end}}
@@ -38,18 +42,20 @@
             {{end}}
           </div>
 
-          <div class="cocktailActions">
+          <div class="cocktail-card__actions">
+            <a class="btn btn--small btn--ghost" href="/cocktails/{{.ID}}">{{if and $u (or (eq $u.Role "BARTENDER") (eq $u.Role "ADMIN"))}}View recipe{{else}}Details{{end}}</a>
+
             {{if and $u (or (eq $u.Role "BARTENDER") (eq $u.Role "ADMIN"))}}
+              <a class="btn btn--small" href="/bartender/cocktails/{{.ID}}/edit">Edit</a>
+
               <form method="post"
                     action="/bartender/cocktails/{{.ID}}/toggle"
                     data-hx-post="/bartender/cocktails/{{.ID}}/toggle"
                     data-hx-target="#cocktailsTable"
                     data-hx-swap="innerHTML">
                 <input type="hidden" name="is_enabled" value="{{if .IsEnabled}}0{{else}}1{{end}}">
-                <button class="btn btn--small" type="submit">{{if .IsEnabled}}Disable{{else}}Enable{{end}}</button>
+                <button class="btn btn--small {{if not .IsEnabled}}btn--primary{{end}}" type="submit">{{if .IsEnabled}}Hide from menu{{else}}Show on menu{{end}}</button>
               </form>
-
-              <a class="btn btn--small btn--ghost" href="/bartender/cocktails/{{.ID}}/edit">Edit</a>
 
               <form method="post"
                     action="/bartender/cocktails/{{.ID}}/delete"
@@ -59,19 +65,26 @@
                     onsubmit="return confirm('Delete cocktail?');">
                 <button class="btn btn--small btn--danger" type="submit">Delete</button>
               </form>
-
-              <a class="btn btn--small" href="/cocktails/{{.ID}}">View recipe</a>
-            {{else}}
-              <a class="btn btn--small" href="/cocktails/{{.ID}}">Details</a>
             {{end}}
           </div>
         </div>
       </article>
     {{end}}
   {{else}}
-    <p class="muted">No cocktails found.</p>
+    <section class="empty-state">
+      <h3 class="empty-state__title">No cocktails found</h3>
+      <p class="empty-state__body">
+        {{if and $u (or (eq $u.Role "BARTENDER") (eq $u.Role "ADMIN"))}}Create your first cocktail or adjust availability once ingredients are ready.{{else}}Try a different filter or check back after the menu is updated.{{end}}
+      </p>
+      {{if and $u (or (eq $u.Role "BARTENDER") (eq $u.Role "ADMIN"))}}
+        <a class="btn btn--primary" href="/bartender/cocktails/new">Create a cocktail</a>
+      {{end}}
+    </section>
   {{end}}
 {{else}}
-  <p class="muted">No cocktails found.</p>
+  <section class="empty-state">
+    <h3 class="empty-state__title">No cocktails found</h3>
+    <p class="empty-state__body">There is nothing to show right now.</p>
+  </section>
 {{end}}
 {{end}}

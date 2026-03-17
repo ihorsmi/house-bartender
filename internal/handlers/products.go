@@ -39,13 +39,13 @@ func (s *Server) ProductCreatePost(w http.ResponseWriter, r *http.Request) {
 		StockCount:    in.StockCount,
 	})
 	if err != nil {
-		s.App.AddFlash(w, r, app.FlashError, "Could not create product (name might already exist).")
+		s.App.AddFlash(w, r, app.FlashError, "Could not create ingredient (name might already exist).")
 		s.redirect(w, r, "/bartender/products")
 		return
 	}
 
 	s.broadcastInventory()
-	s.App.AddFlash(w, r, app.FlashSuccess, "Product created.")
+	s.App.AddFlash(w, r, app.FlashSuccess, "Ingredient created.")
 	s.redirect(w, r, "/bartender/products")
 }
 
@@ -85,7 +85,7 @@ func (s *Server) ProductEditGet(w http.ResponseWriter, r *http.Request) {
 		Products: products,
 		Form:     productFormStateFromProduct(*p),
 	}
-	s.renderLayout(w, r, "Edit Product", "bartender_products.html", page)
+	s.renderLayout(w, r, "Edit Ingredient", "bartender_products.html", page)
 }
 
 func (s *Server) ProductEditPost(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +125,7 @@ func (s *Server) ProductEditPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.broadcastInventory()
-	s.App.AddFlash(w, r, app.FlashSuccess, "Product updated.")
+	s.App.AddFlash(w, r, app.FlashSuccess, "Ingredient updated.")
 	s.redirect(w, r, "/bartender/products")
 }
 
@@ -159,13 +159,13 @@ func (s *Server) ProductDeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.App.Store().Q.DeleteProduct(id); err != nil {
-		s.App.AddFlash(w, r, app.FlashError, "Delete failed (product might be used by a cocktail).")
+		s.App.AddFlash(w, r, app.FlashError, "Delete failed (ingredient might be used by a cocktail).")
 		s.redirect(w, r, "/bartender/products")
 		return
 	}
 
 	s.broadcastInventory()
-	s.App.AddFlash(w, r, app.FlashSuccess, "Product deleted.")
+	s.App.AddFlash(w, r, app.FlashSuccess, "Ingredient deleted.")
 	s.redirect(w, r, "/bartender/products")
 }
 
@@ -225,4 +225,3 @@ func int64PtrToString(v *int64) string {
 	}
 	return strconv.FormatInt(*v, 10)
 }
-

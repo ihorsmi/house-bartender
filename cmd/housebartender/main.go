@@ -128,6 +128,14 @@ func main() {
 		br.Get("/partials/orders", h.BartenderOrdersPartialGet)
 	})
 
+	r.Route("/partials/bartender", func(pr chi.Router) {
+		pr.Use(a.RequireAnyRole(app.RoleBartender, app.RoleAdmin))
+
+		pr.Get("/products", h.BartenderProductsPartialGet)
+		pr.Get("/cocktails", h.BartenderCocktailsPartialGet)
+		pr.Get("/orders", h.BartenderOrdersPartialGet)
+	})
+
 	// Admin
 	r.Route("/admin", func(ad chi.Router) {
 		ad.Use(a.RequireRole(app.RoleAdmin))

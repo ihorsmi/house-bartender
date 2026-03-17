@@ -1,37 +1,54 @@
 {{define "bartender_dashboard.html"}}
-<section class="card">
-  <div class="row row--gap">
-    <div class="grow">
-      <h1>Bartender Dashboard</h1>
-      <p class="muted">Live updates via SSE. Use Orders page for full workflow.</p>
-    </div>
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">Bartender portal</p>
+    <h1>Dashboard</h1>
+    <p class="page-header__body">Keep an eye on queue volume and jump into the areas that need attention first.</p>
+  </div>
+
+  <div class="page-actions">
     <form method="post" action="/bartender/duty">
       <button class="btn {{if .Page.OnDuty}}btn--primary{{end}}" type="submit">
-        {{if .Page.OnDuty}}On Duty{{else}}Off Duty{{end}}
+        {{if .Page.OnDuty}}On duty{{else}}Off duty{{end}}
       </button>
     </form>
   </div>
-
-  <div class="stats">
-    <div class="stat"><div class="stat__n">{{.Page.CountPlaced}}</div><div class="stat__l">Placed</div></div>
-    <div class="stat"><div class="stat__n">{{.Page.CountAccepted}}</div><div class="stat__l">Accepted</div></div>
-    <div class="stat"><div class="stat__n">{{.Page.CountInProgress}}</div><div class="stat__l">In progress</div></div>
-    <div class="stat"><div class="stat__n">{{.Page.CountReady}}</div><div class="stat__l">Ready</div></div>
-  </div>
-
-  <div class="row row--gap">
-    <a class="btn btn--primary" href="/bartender/orders">Go to Order Queue</a>
-    <a class="btn" href="/bartender/products">Products</a>
-    <a class="btn" href="/bartender/cocktails">Cocktails</a>
-  </div>
 </section>
 
-<section class="card">
-  <h2>Newest orders</h2>
-  <div id="ordersList">
-    <!-- dashboard reuses queue partial -->
-    <div data-auto-refresh="orders"></div>
-  </div>
-  <p class="muted">Auto-refresh uses the same partial as /bartender/orders.</p>
+<section class="page-grid page-grid--dashboard">
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <h2>Queue snapshot</h2>
+        <p class="muted">Live counts update as orders move through service.</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat__n">{{.Page.CountPlaced}}</div><div class="stat__l">Placed</div></div>
+      <div class="stat"><div class="stat__n">{{.Page.CountAccepted}}</div><div class="stat__l">Accepted</div></div>
+      <div class="stat"><div class="stat__n">{{.Page.CountInProgress}}</div><div class="stat__l">In progress</div></div>
+      <div class="stat"><div class="stat__n">{{.Page.CountReady}}</div><div class="stat__l">Ready</div></div>
+    </div>
+
+    <div class="panel__actions panel__actions--start">
+      <a class="btn btn--primary" href="/bartender/orders">Open order queue</a>
+      <a class="btn" href="/bartender/products">Ingredients</a>
+      <a class="btn" href="/bartender/cocktails">Cocktails</a>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <h2>Newest orders</h2>
+        <p class="muted">This preview uses the same live partial as the full queue.</p>
+      </div>
+    </div>
+
+    <div id="ordersList">
+      <div data-auto-refresh="orders"></div>
+    </div>
+  </section>
 </section>
 {{end}}

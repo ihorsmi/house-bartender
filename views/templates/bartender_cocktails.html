@@ -1,15 +1,27 @@
 {{define "bartender_cocktails.html"}}
-<section class="card">
-  <div class="row row--gap">
-    <div class="grow">
-      <h1>Cocktails</h1>
-      <p class="muted">A cocktail is available if enabled AND all required ingredients are available.</p>
-    </div>
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">Bartender portal</p>
+    <h1>Cocktails</h1>
+    <p class="page-header__body">Keep recipes clear for the team. "Menu on" controls visibility, while "Orderable" depends on required ingredients being available.</p>
+  </div>
+
+  <div class="page-actions">
+    <a class="btn btn--ghost" href="/bartender/products">Check ingredients</a>
     <a class="btn btn--primary" href="/bartender/cocktails/new">New cocktail</a>
   </div>
 </section>
 
-<section class="grid" id="cocktailsTable">
-  {{template "cocktails_table.html" .}}
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <h2>Recipe library</h2>
+      <p class="muted">Update recipes when the build changes, switch menu visibility when a drink should stay hidden, and delete only when the recipe is no longer needed.</p>
+    </div>
+  </div>
+
+  <div class="grid" id="cocktailsTable">
+    {{template "cocktails_table.html" .}}
+  </div>
 </section>
 {{end}}

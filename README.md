@@ -1,106 +1,102 @@
-# House Bartender 🍸🏠
+# House Bartender
 
-A tiny, self-hosted cocktail ordering app for home use.
+House Bartender is a small self-hosted cocktail ordering app for home bars, private events, and day-to-day service workflows.
 
-**House Bartender** has two portals:
+It keeps the stack simple:
 
-- **User portal:** browse *available* cocktails and place an order.
-- **Bartender portal:** manage products (ingredients), enable/disable cocktails, and handle the live order queue.
+- Go backend
+- server-rendered HTML
+- HTMX interactions
+- SQLite persistence
+- SSE live updates
 
-Built as a lightweight, containerized app with a single Go backend binary, server-rendered HTML + **HTMX** (no React), **SQLite** persistence, and **SSE** notifications.
+Version `1.0.2` focuses on a more polished, production-ready UI:
 
----
+- cleaner shared layout across user, bartender, and admin portals
+- finished light and dark themes with a persistent theme toggle
+- clearer cocktail and ingredient CRUD flows
+- direct list actions for common bartender tasks
+- improved live queue layout and dashboard previews
 
 ## Table of contents
 
-- [Features (v1)](#features-v1)
+- [Highlights](#highlights)
+- [Portals](#portals)
 - [Tech stack](#tech-stack)
-- [Quick start (Docker Compose)](#quick-start-docker-compose)
+- [Quick start](#quick-start)
+- [Environment](#environment)
 - [First-time setup](#first-time-setup)
-- [Seeding products & cocktails](#seeding-products--cocktails)
-- [Roles & access](#roles--access)
 - [How availability works](#how-availability-works)
-- [Data persistence & backups](#data-persistence--backups)
-- [Development (local)](#development-local)
-- [Troubleshooting](#troubleshooting)
+- [Development](#development)
 - [Screenshots](#screenshots)
-- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
 - [Security notes](#security-notes)
 
----
+## Highlights
 
-## Features (v1)
+- Browse only cocktails that are actually orderable right now.
+- Manage ingredients, stock, and manual availability from the bartender inventory screen.
+- Create and edit cocktails with recipe ingredients, instructions, and menu visibility controls.
+- Work the live order queue with assignment and status updates.
+- Manage users, roles, passwords, and bartender duty from the admin portal.
+- Use the app in light or dark mode, with the theme saved in `localStorage`.
+
+## Portals
 
 ### User portal
 
-- View cocktails that are **available right now**
-  - Availability = **cocktail enabled** AND **all required ingredients available**
-- Filter by alcohol / tags / include/exclude ingredient
-- View cocktail recipe details (ingredients + instructions)
-- Place an order (quantity, location, notes)
-- View your order history + timeline events
+- Browse available cocktails
+- Filter by alcohol, tags, and ingredient include/exclude rules
+- View cocktail details and recipe notes
+- Place orders with quantity, location, and notes
+- Track order history and timeline updates
 
 ### Bartender portal
 
-- Products (ingredients)
-  - Toggle availability
-  - Optional stock count (if set, availability comes from stock `> 0`)
-- Cocktails
-  - Create / edit / delete cocktails
-  - Enable / disable cocktails
-  - Manage recipe ingredients (required/optional)
-- Queue
-  - Live updates via **SSE**
-  - Assign orders to bartenders
-  - Update status flow (placed → in progress → delivered / cancelled)
+- View dashboard counts and newest order previews
+- Manage ingredient inventory and stock
+- Mark ingredients available or unavailable directly from the list
+- Create, edit, show, and hide cocktails from the menu
+- Run the live order queue with SSE updates
 
-### Admin
+### Admin portal
 
-- Create users, assign roles (**USER / BARTENDER / ADMIN**)
-- Enable/disable accounts
-- Toggle bartender “on duty”
-- Set/reset user passwords
-- View DB counts + run idempotent seed
-
----
+- Create and manage accounts
+- Assign `USER`, `BARTENDER`, and `ADMIN` roles
+- Enable or disable access
+- Control bartender duty where it applies
+- Run idempotent seed actions and review system details
 
 ## Tech stack
 
-- **Backend:** Go (single binary)
-- **UI:** server-rendered HTML + **HTMX** (no React)
-- **Database:** SQLite (persisted in Docker volume)
-- **Realtime:** Server-Sent Events (SSE)
-- **Auth:** cookie session + RBAC (**USER / BARTENDER / ADMIN**)
-- **Deploy:** Docker / Docker Compose
+- Backend: Go
+- UI: server-rendered templates + HTMX
+- Database: SQLite
+- Realtime: Server-Sent Events
+- Auth: cookie sessions + role-based access
+- Deployment: Docker / Docker Compose
 
----
+## Quick start
 
-## Quick start (Docker Compose)
-
-### 1) Clone
+### 1. Clone
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ihorsmi/house-bartender.git
 cd house-bartender
 ```
 
-### 2) Configure environment (recommended)
+### 2. Configure `.env`
 
-Create a `.env` file (or use your existing Compose env wiring) with at least stable session keys:
+Example:
 
 ```bash
-# required for stable logins across restarts
-SESSION_HASH_KEY_HEX=$(openssl rand -hex 32)
+SESSION_HASH_KEY_HEX=replace-with-64-hex-chars
+SESSION_BLOCK_KEY_HEX=replace-with-64-hex-chars
 
-# optional (recommended if your session implementation uses encryption)
-SESSION_BLOCK_KEY_HEX=$(openssl rand -hex 32)
-
-# optional: bootstrap first admin without onboarding page
 BOOTSTRAP_ADMIN_EMAIL=admin@local
 BOOTSTRAP_ADMIN_PASSWORD=change-me-strong
-BOOTSTRAP_ADMIN_NAME=admin
+BOOTSTRAP_ADMIN_NAME=Admin
 
-# optional app config
 ADDR=:8080
 BASE_URL=http://localhost:8080
 DATA_DIR=/data
@@ -108,126 +104,67 @@ DB_PATH=/data/housebartender.db
 UPLOAD_DIR=/data/uploads
 ```
 
-If `SESSION_HASH_KEY_HEX` is missing/too short, the app will generate an ephemeral key and you’ll be logged out on restart.
+If the session keys are missing, sessions may be reset on restart.
 
-### 3) Run
+### 3. Start the app
 
 ```bash
 docker compose up -d --build
 docker compose logs -f app
 ```
 
-Open:
+Open `http://localhost:8080`.
 
-- http://localhost:8080
+## Environment
 
----
+Common environment variables:
+
+- `ADDR`: listen address, for example `:8080`
+- `BASE_URL`: public base URL
+- `DATA_DIR`: base data directory
+- `DB_PATH`: SQLite database path
+- `UPLOAD_DIR`: upload directory for images
+- `SESSION_HASH_KEY_HEX`: required for stable sessions
+- `SESSION_BLOCK_KEY_HEX`: optional encryption key if used by your session config
+- `BOOTSTRAP_ADMIN_EMAIL`: bootstrap admin email
+- `BOOTSTRAP_ADMIN_PASSWORD`: bootstrap admin password
+- `BOOTSTRAP_ADMIN_NAME`: bootstrap admin display name
 
 ## First-time setup
 
-### Option A: Bootstrap admin via env (recommended)
+There are two ways to create the first admin.
 
-If `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` / `BOOTSTRAP_ADMIN_NAME` are set and no admin exists yet, the app will create the first admin automatically.
+### Option A. Bootstrap by environment
 
-### Option B: Onboarding page
+If the bootstrap admin variables are set and no admin exists yet, the app creates the first admin automatically on startup.
 
-If no admin exists and you didn’t provide bootstrap env vars, you’ll be redirected to:
+### Option B. Use onboarding
 
-- `/onboarding`
-
-Create the first admin there.
-
----
-
-## Seeding products & cocktails
-
-The app seeds the catalog only if the `products` and `cocktails` tables are empty, so your changes persist.
-
-You can also run an idempotent seed from:
-
-- `/admin/settings` → **Seed**
-
-To verify your DB quickly inside the Docker volume:
-
-```bash
-docker compose ps --services
-# (your service is usually "app")
-
-# If you know the volume name (example):
-vol="house-bartender_housebartender_data"
-echo "select count(*) from products; select count(*) from cocktails;" | docker run --rm -i -v ${vol}:/data alpine:3.20 sh -lc   "apk add --no-cache sqlite >/dev/null; sqlite3 /data/housebartender.db"
-```
-
----
-
-## Roles & access
-
-### USER
-
-- Browse available cocktails
-- Place orders
-- View own orders
-
-### BARTENDER
-
-- Manage products (availability/stock)
-- Manage cocktails (enable/disable, edit recipes)
-- Work order queue (assign, status changes)
-
-### ADMIN
-
-- Everything a bartender can do
-- Manage users & roles + passwords
-- Settings & seed tools
-
----
+If no admin exists and no bootstrap admin is configured, the app redirects to `/onboarding`.
 
 ## How availability works
 
-### Product availability
+### Ingredient availability
 
-- If `stock_count` is set → available when `stock_count > 0`
-- Else → available when `is_available = 1`
+- If `stock_count` is set, availability follows stock and the ingredient is available only when `stock_count > 0`.
+- If `stock_count` is blank, availability follows the manual `is_available` flag.
 
 ### Cocktail availability
 
-A cocktail is available when:
+A cocktail is orderable when:
 
-- `is_enabled = 1`
-- AND every required ingredient’s product is available (rule above)
+- it is shown on the menu
+- it is enabled for ordering
+- all required ingredients are available
 
----
+Optional recipe ingredients do not block ordering.
 
-## Data persistence & backups
-
-By default in Docker:
-
-- SQLite DB: `/data/housebartender.db`
-- Uploads: `/data/uploads`
-
-`/data` is a Docker volume (survives container recreation).
-
-Backup example:
-
-```bash
-# Stop the app first to avoid partial writes
-docker compose stop
-
-# Copy DB out of the volume using a helper container
-vol="house-bartender_housebartender_data"
-docker run --rm -v ${vol}:/data -v "$(pwd)":/backup alpine:3.20   sh -lc "cp /data/housebartender.db /backup/housebartender.db.backup"
-
-docker compose start
-```
-
----
-
-## Development (local)
+## Development
 
 ### Requirements
 
-- Go toolchain
-- SQLite build support (CGO enabled)
+- Go 1.22+
+- CGO support for `github.com/mattn/go-sqlite3`
 
 ### Run locally
 
@@ -235,79 +172,72 @@ docker compose start
 go run ./cmd/housebartender
 ```
 
-Or build:
+### Build locally
 
 ```bash
-go build -o housebartender ./cmd/housebartender
-./housebartender
+go build ./cmd/housebartender
 ```
 
----
+### Test
+
+```bash
+go test ./...
+```
+
+## Screenshots
+
+### Login
+
+Polished entry screen with persistent theme toggle.
+
+![Login screen](docs/screenshots/loginscreen.png)
+
+### User portal
+
+Browse cocktails with the cleaned-up catalog layout.
+
+![Cocktails screen](docs/screenshots/cocktailsscreen.png)
+
+Track placed, accepted, in-progress, ready, and delivered orders.
+
+![User orders](docs/screenshots/userorders.png)
+
+### Bartender portal
+
+Work the live queue with assignment and status controls sized for fast service.
+
+![Bartender orders](docs/screenshots/bartenderorders.png)
 
 ## Troubleshooting
 
 ### Sessions reset on restart
 
-Set a stable `SESSION_HASH_KEY_HEX` (and optionally `SESSION_BLOCK_KEY_HEX`) in env.
+Set stable session keys in `.env`, especially `SESSION_HASH_KEY_HEX`.
 
-### No cocktails appear for user
+### No cocktails appear for users
 
-User portal only shows cocktails that are computed available:
+Check all of the following:
 
-- Ensure cocktails are enabled
-- Ensure required ingredients are available (`stock > 0` or `is_available=1`)
+- the cocktail is shown on the menu
+- the cocktail is enabled
+- each required ingredient is available
 
-### Template parse errors
+### Database and uploads
 
-If you edited templates recently:
+By default in Docker:
 
-- Make sure all `{{if}}` / `{{else}}` / `{{end}}` blocks are properly nested
-- Avoid using template functions unless they exist in Go `template.FuncMap`
+- database: `/data/housebartender.db`
+- uploads: `/data/uploads`
 
----
-
-## Screenshots
-
-A quick look at the main flows in **House Bartender**:
-
-### User portal
-
-**User portal home / navigation**
-![User portal](docs/screenshots/userportal.png)
-
-**Browse available cocktails**
-![User cocktails](docs/screenshots/usercocktails.png)
-
-**Place and track orders**
-![User orders](docs/screenshots/userorders.png)
-
-### Bartender portal
-
-**Manage products / ingredient availability**
-![Bartender products](docs/screenshots/bartenderproducts.png)
-
-**Live order queue**
-![Bartender orders](docs/screenshots/bartenderorders.png)
-
----
-
-
-## Contributing
-
-PRs welcome. Suggested workflow:
-
-1. Open an issue describing the change
-2. Create a feature branch
-3. Keep changes focused and small
-4. Ensure templates render correctly for **USER / BARTENDER / ADMIN** paths
-
----
+Back up `/data` before major upgrades.
 
 ## Security notes
 
-This app is designed for home/self-hosted use. If exposing beyond your LAN:
+This project is designed for home and internal self-hosted use.
 
-- Put behind a reverse proxy with TLS
-- Consider IP allowlists / auth hardening
-- Use strong admin passwords
-- Keep session keys secret
+If you expose it beyond your local network:
+
+- run it behind TLS
+- use strong admin credentials
+- keep session keys secret
+- restrict access at the proxy or network level

@@ -1,10 +1,22 @@
 {{define "user_orders.html"}}
-<section class="card">
-  <h1>My Orders</h1>
-  <p class="muted">This page updates live via SSE.</p>
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">User portal</p>
+    <h1>My orders</h1>
+    <p class="page-header__body">Track every drink from the moment it is placed. This page refreshes automatically with SSE.</p>
+  </div>
 </section>
 
-<section id="ordersList">
-  {{template "orders_list.html" .}}
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <h2>Live order history</h2>
+      <p class="muted">Your current queue and recent updates appear here.</p>
+    </div>
+  </div>
+
+  <section id="ordersList">
+    {{template "orders_list.html" .}}
+  </section>
 </section>
 {{end}}

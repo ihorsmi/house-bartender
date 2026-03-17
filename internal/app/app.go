@@ -153,6 +153,13 @@ func New(cfg Config, logger *slog.Logger) (*App, error) {
 			return out
 		},
 		"hasPrefix": strings.HasPrefix,
+		"humanizeEnum": func(s string) string {
+			s = strings.TrimSpace(strings.ReplaceAll(strings.ToLower(s), "_", " "))
+			if s == "" {
+				return ""
+			}
+			return strings.ToUpper(s[:1]) + s[1:]
+		},
 		"fmtQty": func(q *float64) string {
 			if q == nil {
 				return ""

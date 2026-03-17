@@ -1,10 +1,22 @@
 {{define "bartender_orders.html"}}
-<section class="card">
-  <h1>Order Queue</h1>
-  <p class="muted">Newest first. Use one-click status updates. This page updates live via SSE.</p>
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">Bartender portal</p>
+    <h1>Order queue</h1>
+    <p class="page-header__body">New orders appear automatically. Claim a drink, hand it over cleanly when needed, and keep statuses moving so guests know what is happening.</p>
+  </div>
 </section>
 
-<section id="ordersList">
-  {{template "orders_list.html" .}}
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <h2>Live queue</h2>
+      <p class="muted">Sorted newest first and refreshed with SSE.</p>
+    </div>
+  </div>
+
+  <div id="ordersList">
+    {{template "orders_list.html" .}}
+  </div>
 </section>
 {{end}}

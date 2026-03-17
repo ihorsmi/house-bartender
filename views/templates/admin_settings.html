@@ -1,6 +1,19 @@
 {{define "admin_settings.html"}}
-<section class="card">
-  <h1>Settings</h1>
+<section class="page-header">
+  <div class="page-header__copy">
+    <p class="page-header__eyebrow">Admin portal</p>
+    <h1>Settings</h1>
+    <p class="page-header__body">Environment details and maintenance actions for this installation.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <h2>System details</h2>
+      <p class="muted">Use this page for quick environment checks and idempotent seed operations.</p>
+    </div>
+  </div>
 
   <div class="kv">
     <div class="kv__k">DB Path</div><div class="kv__v">{{.Page.DBPath}}</div>
@@ -8,10 +21,10 @@
     <div class="kv__k">Counts</div><div class="kv__v">{{.Page.Counts}}</div>
   </div>
 
-  <div class="row row--gap">
+  <div class="panel__actions panel__actions--start">
     <a class="btn" href="/health">Health</a>
     <form method="post" action="/admin/settings/seed">
-      <button class="btn btn--primary" type="submit">Run seed (idempotent)</button>
+      <button class="btn btn--primary" type="submit">Run seed</button>
     </form>
   </div>
 </section>
