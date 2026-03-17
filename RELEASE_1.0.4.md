@@ -21,8 +21,3 @@ Release date: 2026-03-17
 - Replaced the single flip button with a grouped two-button view selector.
 - Added active button styling based on the saved cocktail catalog view mode.
 - Applied the same explicit line/grid selector pattern to the user cocktail catalog for consistency.
-
-## Operational notes
-
-- No data migration or seed action is required for this release.
-- This release should be tagged as `v1.0.4` so the GHCR workflow publishes a versioned image.
