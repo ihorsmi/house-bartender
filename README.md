@@ -10,13 +10,12 @@ It keeps the stack simple:
 - SQLite persistence
 - SSE live updates
 
-Version `1.0.2` focuses on a more polished, production-ready UI:
+Version `1.0.3` focuses on cleaner day-to-day service workflows:
 
-- cleaner shared layout across user, bartender, and admin portals
-- finished light and dark themes with a persistent theme toggle
-- clearer cocktail and ingredient CRUD flows
-- direct list actions for common bartender tasks
-- improved live queue layout and dashboard previews
+- aligned admin and bartender pages around the same stacked panel layout
+- fixed inline inventory stock and manual availability actions from the list view
+- made compact line view the default for cocktails, with optional grid view switching
+- improved dashboard, users, and catalog screens for faster scanning during service
 
 ## Table of contents
 
@@ -36,7 +35,9 @@ Version `1.0.2` focuses on a more polished, production-ready UI:
 
 - Browse only cocktails that are actually orderable right now.
 - Manage ingredients, stock, and manual availability from the bartender inventory screen.
+- Clear tracked stock back to blank and return to manual availability directly from inventory.
 - Create and edit cocktails with recipe ingredients, instructions, and menu visibility controls.
+- Switch cocktail browsing between default line view and optional grid view.
 - Work the live order queue with assignment and status updates.
 - Manage users, roles, passwords, and bartender duty from the admin portal.
 - Use the app in light or dark mode, with the theme saved in `localStorage`.
@@ -45,7 +46,7 @@ Version `1.0.2` focuses on a more polished, production-ready UI:
 
 ### User portal
 
-- Browse available cocktails
+- Browse available cocktails in default line view, with optional grid view
 - Filter by alcohol, tags, and ingredient include/exclude rules
 - View cocktail details and recipe notes
 - Place orders with quantity, location, and notes
@@ -53,15 +54,16 @@ Version `1.0.2` focuses on a more polished, production-ready UI:
 
 ### Bartender portal
 
-- View dashboard counts and newest order previews
+- View dashboard counts and newest order previews in a cleaner stacked layout
 - Manage ingredient inventory and stock
 - Mark ingredients available or unavailable directly from the list
 - Create, edit, show, and hide cocktails from the menu
+- Switch the cocktail library between default line view and optional grid view
 - Run the live order queue with SSE updates
 
 ### Admin portal
 
-- Create and manage accounts
+- Create and manage accounts in the same aligned stacked layout used across admin screens
 - Assign `USER`, `BARTENDER`, and `ADMIN` roles
 - Enable or disable access
 - Control bartender duty where it applies

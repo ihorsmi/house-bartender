@@ -61,6 +61,10 @@ func (s *Server) ProductTogglePost(w http.ResponseWriter, r *http.Request) {
 	_ = s.App.Store().Q.ToggleProductAvailability(id, avail)
 
 	s.broadcastInventory()
+	if r.Header.Get("HX-Request") != "" {
+		s.renderProductsTablePartial(w, r)
+		return
+	}
 	s.redirect(w, r, "/bartender/products")
 }
 
@@ -148,6 +152,10 @@ func (s *Server) ProductStockPost(w http.ResponseWriter, r *http.Request) {
 	_ = s.App.Store().Q.SetProductStock(id, stock)
 
 	s.broadcastInventory()
+	if r.Header.Get("HX-Request") != "" {
+		s.renderProductsTablePartial(w, r)
+		return
+	}
 	s.redirect(w, r, "/bartender/products")
 }
 
@@ -165,8 +173,21 @@ func (s *Server) ProductDeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.broadcastInventory()
+	if r.Header.Get("HX-Request") != "" {
+		s.renderProductsTablePartial(w, r)
+		return
+	}
 	s.App.AddFlash(w, r, app.FlashSuccess, "Ingredient deleted.")
 	s.redirect(w, r, "/bartender/products")
+}
+
+func (s *Server) renderProductsTablePartial(w http.ResponseWriter, r *http.Request) {
+	search := r.URL.Query().Get("q")
+	products, _ := s.App.Store().Q.ListProducts(search)
+	s.renderPartial(w, r, "products_table.html", BartenderProductsPage{
+		Search:   search,
+		Products: products,
+	}, "")
 }
 
 func parseProductFormInput(r *http.Request) (productFormInput, bool) {

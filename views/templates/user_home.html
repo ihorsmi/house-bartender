@@ -45,8 +45,21 @@
   </div>
 </section>
 
-<section id="cocktailGrid" class="grid">
-  {{template "cocktails_table.html" .}}
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <h2>Available cocktails</h2>
+      <p class="muted">Start in the compact line view, or switch to the grid when you want a wider browse layout.</p>
+    </div>
+
+    <button class="btn btn--ghost" type="button" data-cocktail-view-toggle>
+      Grid view
+    </button>
+  </div>
+
+  <div id="cocktailGrid" class="grid cocktails-view" data-cocktail-view-target data-cocktail-view="list">
+    {{template "cocktails_table.html" .}}
+  </div>
 </section>
 
 <div class="spacer"></div>

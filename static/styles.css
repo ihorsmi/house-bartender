@@ -1012,6 +1012,47 @@ input[type="checkbox"] {
   white-space: nowrap;
 }
 
+.cocktails-view[data-cocktail-view="list"] {
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.cocktails-view[data-cocktail-view="list"] .cocktail-card {
+  padding: var(--card-padding-sm);
+}
+
+.cocktails-view[data-cocktail-view="list"] .cocktail-card__description {
+  min-height: 0;
+}
+
+@media (min-width: 62rem) {
+  .cocktails-view[data-cocktail-view="list"] .cocktail-card__inner {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--space-4);
+  }
+
+  .cocktails-view[data-cocktail-view="list"] .cocktail-card__summary {
+    flex: 1 1 auto;
+  }
+
+  .cocktails-view[data-cocktail-view="list"] .cocktail-card__actions {
+    flex: 0 0 13rem;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    margin-top: 0;
+    padding-top: 0;
+    padding-left: var(--space-4);
+    border-top: 0;
+    border-left: 1px solid var(--line);
+  }
+
+  .cocktails-view[data-cocktail-view="list"] .cocktail-card__actions > * {
+    width: 100%;
+  }
+}
+
 .ingredient-editor {
   display: flex;
   flex-direction: column;

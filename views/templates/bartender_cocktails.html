@@ -18,9 +18,13 @@
       <h2>Recipe library</h2>
       <p class="muted">Update recipes when the build changes, switch menu visibility when a drink should stay hidden, and delete only when the recipe is no longer needed.</p>
     </div>
+
+    <button class="btn btn--ghost" type="button" data-cocktail-view-toggle>
+      Grid view
+    </button>
   </div>
 
-  <div class="grid" id="cocktailsTable">
+  <div class="grid cocktails-view" id="cocktailsTable" data-cocktail-view-target data-cocktail-view="list">
     {{template "cocktails_table.html" .}}
   </div>
 </section>

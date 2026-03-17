@@ -2,6 +2,7 @@
 
 (function () {
   const THEME_KEY = "hb-theme";
+  const COCKTAIL_VIEW_KEY = "hb-cocktail-view-v2";
   const HX_REQ_HEADER = { "HX-Request": "true" };
   const systemThemeQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 
@@ -87,10 +88,70 @@
     });
   }
 
+  function normalizeCocktailView(view) {
+    return view === "list" ? "list" : "cards";
+  }
+
+  function getStoredCocktailView() {
+    try {
+      const value = localStorage.getItem(COCKTAIL_VIEW_KEY);
+      return value ? normalizeCocktailView(value) : "list";
+    } catch (err) {
+      return "list";
+    }
+  }
+
+  function applyCocktailView(view) {
+    const mode = normalizeCocktailView(view);
+    const nextMode = mode === "list" ? "cards" : "list";
+
+    qsa("[data-cocktail-view-target]").forEach((node) => {
+      node.setAttribute("data-cocktail-view", mode);
+    });
+
+    qsa("[data-cocktail-view-toggle]").forEach((button) => {
+      button.textContent = nextMode === "list" ? "Line view" : "Grid view";
+      button.setAttribute("aria-label", "Switch to " + (nextMode === "list" ? "line" : "grid") + " view");
+      button.setAttribute("aria-pressed", String(mode === "list"));
+      button.dataset.cocktailViewMode = mode;
+    });
+  }
+
+  function setCocktailView(view) {
+    const mode = normalizeCocktailView(view);
+    try {
+      localStorage.setItem(COCKTAIL_VIEW_KEY, mode);
+    } catch (err) {}
+    applyCocktailView(mode);
+  }
+
+  function wireCocktailViewToggle(root = document) {
+    collect("[data-cocktail-view-toggle]", root).forEach((button) => {
+      if (button.dataset.bound === "1") {
+        return;
+      }
+      button.dataset.bound = "1";
+
+      button.addEventListener("click", () => {
+        const current = normalizeCocktailView(button.dataset.cocktailViewMode || getStoredCocktailView());
+        setCocktailView(current === "list" ? "cards" : "list");
+      });
+    });
+
+    if (qsa("[data-cocktail-view-target]").length > 0) {
+      applyCocktailView(getStoredCocktailView());
+    }
+  }
+
   function hxFetch(url, opts = {}) {
+    const headers = Object.assign({}, HX_REQ_HEADER, opts.headers || {});
+    if (opts.body instanceof URLSearchParams && !headers["Content-Type"] && !headers["content-type"]) {
+      headers["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8";
+    }
+
     return fetch(url, {
       credentials: "same-origin",
-      headers: Object.assign({}, HX_REQ_HEADER, opts.headers || {}),
+      headers,
       method: opts.method || "GET",
       body: opts.body,
     });
@@ -135,6 +196,33 @@
     return { event, delay };
   }
 
+  function defaultHXTrigger(el, getUrl, postUrl) {
+    if (postUrl && el.tagName === "FORM") {
+      return { event: "submit", delay: 0 };
+    }
+
+    return { event: "click", delay: 0 };
+  }
+
+  function buildPostBody(form) {
+    if (!form) {
+      return null;
+    }
+
+    const enctype = (form.getAttribute("enctype") || "").toLowerCase();
+    if (enctype === "multipart/form-data") {
+      return new FormData(form);
+    }
+
+    const params = new URLSearchParams();
+    new FormData(form).forEach((value, key) => {
+      if (typeof value === "string") {
+        params.append(key, value);
+      }
+    });
+    return params;
+  }
+
   function buildUrlWithInputs(baseUrl) {
     const url = new URL(baseUrl, window.location.origin);
     const map = [
@@ -168,7 +256,8 @@
       const postUrl = el.getAttribute("data-hx-post");
       const targetSel = el.getAttribute("data-hx-target");
       const swap = el.getAttribute("data-hx-swap") || "innerHTML";
-      const trig = parseTrigger(el.getAttribute("data-hx-trigger") || "");
+      const triggerAttr = el.getAttribute("data-hx-trigger");
+      const trig = triggerAttr ? parseTrigger(triggerAttr) : defaultHXTrigger(el, getUrl, postUrl);
 
       const handler = async (evt) => {
         if (evt) {
@@ -184,7 +273,7 @@
             resp = await hxFetch(url, { method: "GET" });
           } else {
             const form = el.tagName === "FORM" ? el : el.closest("form");
-            const body = form ? new FormData(form) : null;
+            const body = buildPostBody(form);
             resp = await hxFetch(postUrl, { method: "POST", body });
           }
 
@@ -434,6 +523,7 @@
 
   function initUI(root = document) {
     wireHX(root);
+    wireCocktailViewToggle(root);
     wireIngredientEditors(root);
   }
 
