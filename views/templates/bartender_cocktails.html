@@ -19,9 +19,10 @@
       <p class="muted">Update recipes when the build changes, switch menu visibility when a drink should stay hidden, and delete only when the recipe is no longer needed.</p>
     </div>
 
-    <button class="btn btn--ghost" type="button" data-cocktail-view-toggle>
-      Grid view
-    </button>
+    <div class="action-cluster" role="group" aria-label="Cocktail view switch">
+      <button class="btn btn--primary" type="button" data-cocktail-view-set="list">Line view</button>
+      <button class="btn btn--ghost" type="button" data-cocktail-view-set="cards">Grid view</button>
+    </div>
   </div>
 
   <div class="grid cocktails-view" id="cocktailsTable" data-cocktail-view-target data-cocktail-view="list">

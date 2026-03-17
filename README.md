@@ -10,12 +10,12 @@ It keeps the stack simple:
 - SQLite persistence
 - SSE live updates
 
-Version `1.0.3` focuses on cleaner day-to-day service workflows:
+Version `1.0.4` focuses on a reliable cocktail catalog view switch:
 
-- aligned admin and bartender pages around the same stacked panel layout
-- fixed inline inventory stock and manual availability actions from the list view
-- made compact line view the default for cocktails, with optional grid view switching
-- improved dashboard, users, and catalog screens for faster scanning during service
+- fixed recipe library line/grid switching in bartender and admin views
+- replaced single flip buttons with explicit line and grid view controls
+- kept compact line view as the default cocktail layout across bartender and user catalogs
+- preserved the faster stacked layouts and inline inventory workflow improvements from 1.0.3
 
 ## Table of contents
 
@@ -37,7 +37,7 @@ Version `1.0.3` focuses on cleaner day-to-day service workflows:
 - Manage ingredients, stock, and manual availability from the bartender inventory screen.
 - Clear tracked stock back to blank and return to manual availability directly from inventory.
 - Create and edit cocktails with recipe ingredients, instructions, and menu visibility controls.
-- Switch cocktail browsing between default line view and optional grid view.
+- Switch cocktail browsing between default line view and optional grid view using explicit view buttons.
 - Work the live order queue with assignment and status updates.
 - Manage users, roles, passwords, and bartender duty from the admin portal.
 - Use the app in light or dark mode, with the theme saved in `localStorage`.
@@ -58,7 +58,7 @@ Version `1.0.3` focuses on cleaner day-to-day service workflows:
 - Manage ingredient inventory and stock
 - Mark ingredients available or unavailable directly from the list
 - Create, edit, show, and hide cocktails from the menu
-- Switch the cocktail library between default line view and optional grid view
+- Switch the cocktail library between default line view and optional grid view with explicit controls
 - Run the live order queue with SSE updates
 
 ### Admin portal

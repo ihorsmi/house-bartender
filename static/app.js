@@ -103,17 +103,17 @@
 
   function applyCocktailView(view) {
     const mode = normalizeCocktailView(view);
-    const nextMode = mode === "list" ? "cards" : "list";
 
     qsa("[data-cocktail-view-target]").forEach((node) => {
       node.setAttribute("data-cocktail-view", mode);
     });
 
-    qsa("[data-cocktail-view-toggle]").forEach((button) => {
-      button.textContent = nextMode === "list" ? "Line view" : "Grid view";
-      button.setAttribute("aria-label", "Switch to " + (nextMode === "list" ? "line" : "grid") + " view");
-      button.setAttribute("aria-pressed", String(mode === "list"));
-      button.dataset.cocktailViewMode = mode;
+    qsa("[data-cocktail-view-set]").forEach((button) => {
+      const targetMode = normalizeCocktailView(button.getAttribute("data-cocktail-view-set"));
+      const isActive = targetMode === mode;
+      button.setAttribute("aria-pressed", String(isActive));
+      button.classList.toggle("btn--primary", isActive);
+      button.classList.toggle("btn--ghost", !isActive);
     });
   }
 
@@ -126,15 +126,14 @@
   }
 
   function wireCocktailViewToggle(root = document) {
-    collect("[data-cocktail-view-toggle]", root).forEach((button) => {
+    collect("[data-cocktail-view-set]", root).forEach((button) => {
       if (button.dataset.bound === "1") {
         return;
       }
       button.dataset.bound = "1";
 
       button.addEventListener("click", () => {
-        const current = normalizeCocktailView(button.dataset.cocktailViewMode || getStoredCocktailView());
-        setCocktailView(current === "list" ? "cards" : "list");
+        setCocktailView(button.getAttribute("data-cocktail-view-set"));
       });
     });
 
