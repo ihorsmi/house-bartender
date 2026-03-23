@@ -83,9 +83,29 @@ func Migrate(db *sql.DB) error {
 			FOREIGN KEY(changed_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 		);`,
 
+		`CREATE TABLE IF NOT EXISTS push_subscriptions (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			bartender_user_id INTEGER NOT NULL,
+			endpoint TEXT NOT NULL UNIQUE,
+			p256dh TEXT NOT NULL,
+			auth TEXT NOT NULL,
+			user_agent TEXT NOT NULL DEFAULT '',
+			device_label TEXT NOT NULL DEFAULT '',
+			enabled INTEGER NOT NULL DEFAULT 1,
+			created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+			updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+			last_seen_at INTEGER NULL,
+			last_success_at INTEGER NULL,
+			last_failure_at INTEGER NULL,
+			failure_count INTEGER NOT NULL DEFAULT 0,
+			FOREIGN KEY(bartender_user_id) REFERENCES users(id) ON DELETE CASCADE
+		);`,
+
 		`CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at);`,
 		`CREATE INDEX IF NOT EXISTS idx_order_events_order_created ON order_events(order_id, created_at);`,
 		`CREATE INDEX IF NOT EXISTS idx_cocktail_ingredients_cocktail ON cocktail_ingredients(cocktail_id);`,
+		`CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user_enabled ON push_subscriptions(bartender_user_id, enabled);`,
+		`CREATE INDEX IF NOT EXISTS idx_push_subscriptions_enabled_updated ON push_subscriptions(enabled, updated_at);`,
 	}
 
 	tx, err := db.Begin()

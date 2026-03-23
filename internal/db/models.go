@@ -64,16 +64,16 @@ type IngredientUpsertItem struct {
 }
 
 type Order struct {
-	ID                 int64
-	UserID             int64
-	CocktailID         int64
-	Quantity           int64
-	Notes              string
-	Location           string
-	Status             string
+	ID                  int64
+	UserID              int64
+	CocktailID          int64
+	Quantity            int64
+	Notes               string
+	Location            string
+	Status              string
 	AssignedBartenderID *int64
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 
 	UserDisplayName       string
 	CocktailName          string
@@ -89,6 +89,23 @@ type OrderEvent struct {
 	ChangedByUserID *int64
 	ChangedByName   string
 	CreatedAt       time.Time
+}
+
+type PushSubscription struct {
+	ID              int64
+	BartenderUserID int64
+	Endpoint        string
+	P256DH          string
+	Auth            string
+	UserAgent       string
+	DeviceLabel     string
+	Enabled         bool
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	LastSeenAt      time.Time
+	LastSuccessAt   time.Time
+	LastFailureAt   time.Time
+	FailureCount    int
 }
 
 /* ---------- parameter structs ---------- */
@@ -159,4 +176,13 @@ type CreateOrderParams struct {
 	Quantity   int64
 	Notes      string
 	Location   string
+}
+
+type UpsertPushSubscriptionParams struct {
+	BartenderUserID int64
+	Endpoint        string
+	P256DH          string
+	Auth            string
+	UserAgent       string
+	DeviceLabel     string
 }

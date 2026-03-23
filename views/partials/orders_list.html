@@ -1,118 +1,143 @@
 {{define "orders_list.html"}}
 {{if eq .Page.Mode "user"}}
   {{if .Page.Orders}}
-    <div class="orders-grid orders-grid--history">
+    <div class="space-y-6">
       {{range .Page.Orders}}
-        <article class="card card--compact order-card">
-          <div class="order-card__header">
-            <div class="grow">
-              <div class="row row--gap row--wrap">
-                <h3 class="m0">{{.CocktailName}}</h3>
-                <span class="pill pill--soft">{{humanizeEnum .Status}}</span>
-              </div>
-              <div class="muted tiny">Qty: {{.Quantity}} - Location: {{.Location}} - Placed: {{fmtTime .CreatedAt}}</div>
-              {{if .AssignedBartenderName}}
-                <div class="muted tiny">Bartender: {{.AssignedBartenderName}}</div>
-              {{end}}
-              {{if .Notes}}<p class="muted m0">{{.Notes}}</p>{{end}}
-            </div>
-
-            {{if .CocktailImagePath}}<img class="thumb" src="{{.CocktailImagePath}}" alt="Cocktail image">{{end}}
+        <article class="group relative py-6 flex flex-col md:flex-row items-start gap-6 hover:bg-surface-container-low/30 transition-all px-4 -mx-4 rounded-xl" id="order-{{.ID}}" data-order-id="{{.ID}}" data-shell-search-item="#{{.ID}} {{.CocktailName}} {{.Location}} {{.Status}} {{.AssignedBartenderName}} {{.Notes}}">
+          <div class="flex flex-row md:flex-col items-center gap-3 md:pt-1 shrink-0">
+            <span class="text-[10px] font-black font-label text-secondary leading-none">#{{printf "%03d" .ID}}</span>
+            <div class="hidden md:block h-12 w-[1px] bg-outline-variant/30 my-2"></div>
+            <span class="material-symbols-outlined text-sm {{if eq .Status "READY"}}text-primary{{else}}text-secondary{{end}}">{{orderRailIcon .Status}}</span>
           </div>
 
-          <div class="timeline">
+          <div class="flex-grow w-full">
+            <div class="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
+              <div>
+                <h3 class="text-lg font-bold tracking-tight">{{.CocktailName}}{{if gt .Quantity 1}} <span class="text-secondary text-sm font-normal ml-2">x{{.Quantity}}</span>{{end}}</h3>
+                <p class="text-xs text-secondary font-medium">{{.Location}}{{if .AssignedBartenderName}} | {{.AssignedBartenderName}}{{end}}</p>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{if eq .Status "READY"}}bg-primary text-on-primary{{else if eq .Status "PLACED"}}bg-surface-container-low text-secondary{{else if eq .Status "DELIVERED"}}bg-emerald-100 text-emerald-700{{else if eq .Status "CANCELLED"}}bg-error/10 text-error{{else}}bg-surface-container-highest text-primary{{end}}">{{orderStatusLabel .Status}}</span>
+                <span class="text-xs font-mono tabular-nums text-secondary">{{fmtTime .CreatedAt}}</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {{if gt .Quantity 1}}<div class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 px-3 py-2 rounded"><span class="material-symbols-outlined text-xs text-secondary">confirmation_number</span><span class="text-[11px] font-medium">{{.Quantity}} drinks</span></div>{{end}}
+              {{if .AssignedBartenderName}}<div class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 px-3 py-2 rounded"><span class="material-symbols-outlined text-xs text-secondary">person</span><span class="text-[11px] font-medium">{{.AssignedBartenderName}}</span></div>{{end}}
+              {{if .Notes}}<div class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 px-3 py-2 rounded"><span class="material-symbols-outlined text-xs text-secondary">info</span><span class="text-[11px] font-medium">{{.Notes}}</span></div>{{end}}
+            </div>
+
             {{with (index $.Page.Events .ID)}}
-              {{range .}}
-                <div class="timeline__item">
-                  <div class="timeline__dot"></div>
-                  <div class="timeline__body">
-                    <div class="timeline__line">
-                      <strong>{{humanizeEnum .ToStatus}}</strong>
-                      <span class="muted tiny">{{fmtTime .CreatedAt}}</span>
-                    </div>
-                    {{if .ChangedByName}}<div class="muted tiny">by {{.ChangedByName}}</div>{{end}}
+              <div class="mt-4 bg-surface-container-low/50 p-4 rounded-lg space-y-3">
+                {{range .}}
+                  <div class="flex items-center justify-between gap-3 text-[11px]">
+                    <span class="font-semibold text-primary">{{orderStatusLabel .ToStatus}}</span>
+                    <span class="text-secondary">{{fmtTime .CreatedAt}}{{if .ChangedByName}} | {{.ChangedByName}}{{end}}</span>
                   </div>
-                </div>
-              {{end}}
+                {{end}}
+              </div>
             {{end}}
           </div>
         </article>
       {{end}}
     </div>
-  {{end}}
-
-  {{if not .Page.Orders}}
-    <section class="empty-state">
-      <h3 class="empty-state__title">No orders yet</h3>
-      <p class="empty-state__body">Once you place a drink order, it will show up here with live status updates.</p>
+  {{else}}
+    <section class="rounded-xl bg-surface-container-low px-8 py-10">
+      <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">History Empty</p>
+      <h3 class="text-2xl font-medium tracking-tight text-primary mb-3">No orders yet.</h3>
+      <p class="text-secondary text-sm">Once you place a drink order, it will appear here with live status updates.</p>
     </section>
   {{end}}
 {{else}}
   {{if .Page.Orders}}
-    <div class="orders-grid orders-grid--queue">
+    <div class="space-y-6">
       {{range .Page.Orders}}
-        <article class="card card--compact order-card order-card--queue">
-          <div class="order-card__header">
-            <div class="grow">
-              <div class="row row--gap row--wrap">
-                <h3 class="m0">#{{.ID}} - {{.CocktailName}}</h3>
-                <span class="pill pill--soft">{{humanizeEnum .Status}}</span>
-                <span class="muted tiny">{{since .CreatedAt $.Now}} ago</span>
-              </div>
-              <div class="muted tiny">Guest: {{.UserDisplayName}} - Qty: {{.Quantity}} - Location: {{.Location}}</div>
-              {{if .AssignedBartenderName}}
-                <div class="muted tiny">Assigned: {{.AssignedBartenderName}}</div>
-              {{end}}
-              {{if .Notes}}<p class="muted m0">{{.Notes}}</p>{{end}}
-            </div>
+        {{$next := nextOrderStatus .Status}}
+        <article class="group relative py-6 flex flex-col xl:flex-row items-start gap-6 xl:gap-8 hover:bg-surface-container-low/30 transition-all px-4 -mx-4 rounded-xl" id="order-{{.ID}}" data-order-id="{{.ID}}" data-shell-search-item="#{{.ID}} {{.CocktailName}} {{.Location}} {{.UserDisplayName}} {{.Status}} {{.AssignedBartenderName}} {{.Notes}}">
+          <div class="flex flex-row xl:flex-col items-center gap-3 xl:pt-1 shrink-0">
+            <span class="text-[10px] font-black font-label text-secondary leading-none">#{{printf "%03d" .ID}}</span>
+            <div class="hidden xl:block h-12 w-[1px] bg-outline-variant/30 my-2"></div>
+            <span class="material-symbols-outlined text-sm {{if eq .Status "READY"}}text-primary{{else}}text-secondary{{end}}">{{orderRailIcon .Status}}</span>
           </div>
 
-          <div class="order-card__actions">
-            {{if eq .Status "PLACED"}}
-              <form method="post" action="/bartender/orders/{{.ID}}/accept" class="order-action order-action--simple">
-                <button class="btn btn--small btn--primary" type="submit">Accept order</button>
-              </form>
+          <div class="flex-grow w-full">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-3 mb-4">
+              <div>
+                <h3 class="text-lg font-bold tracking-tight">{{.CocktailName}}{{if gt .Quantity 1}} <span class="text-secondary text-sm font-normal ml-2">x{{.Quantity}}</span>{{end}}</h3>
+                <p class="text-xs text-secondary font-medium">{{.Location}}{{if .UserDisplayName}} | {{.UserDisplayName}}{{end}}{{if .AssignedBartenderName}} | {{.AssignedBartenderName}}{{end}}</p>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{if eq .Status "READY"}}bg-primary text-on-primary{{else if eq .Status "PLACED"}}bg-surface-container-low text-secondary{{else if eq .Status "DELIVERED"}}bg-emerald-100 text-emerald-700{{else if eq .Status "CANCELLED"}}bg-error/10 text-error{{else}}bg-surface-container-highest text-primary{{end}}">{{orderStatusLabel .Status}}</span>
+                <span class="text-xs font-mono tabular-nums text-secondary">{{since .CreatedAt $.Now}}</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              <div class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 px-3 py-2 rounded">
+                <span class="material-symbols-outlined text-xs text-secondary">room_service</span>
+                <span class="text-[11px] font-medium">{{if gt .Quantity 1}}{{.Quantity}} drinks{{else}}Single serve{{end}}</span>
+              </div>
+              {{if .AssignedBartenderName}}
+                <div class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 px-3 py-2 rounded">
+                  <span class="material-symbols-outlined text-xs text-secondary">person</span>
+                  <span class="text-[11px] font-medium">{{.AssignedBartenderName}}</span>
+                </div>
+              {{else}}
+                <div class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 px-3 py-2 rounded">
+                  <span class="material-symbols-outlined text-xs text-secondary">person_add</span>
+                  <span class="text-[11px] font-medium">Unassigned</span>
+                </div>
+              {{end}}
+              {{if .Notes}}
+                <div class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 px-3 py-2 rounded">
+                  <span class="material-symbols-outlined text-xs text-secondary">info</span>
+                  <span class="text-[11px] font-medium">{{.Notes}}</span>
+                </div>
+              {{end}}
+            </div>
+
+            {{if or .CocktailImagePath .Notes}}
+              <div class="mt-4 bg-surface-container-low/50 p-4 rounded-lg flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                  <img class="w-10 h-10 rounded object-cover grayscale brightness-110" alt="{{stitchCocktailAlt .CocktailName}}" src="{{orderCocktailImage .CocktailName .CocktailImagePath}}">
+                  <div>
+                    <p class="text-[11px] font-bold">{{if .AssignedBartenderName}}Assigned Build{{else}}Standard Build{{end}}</p>
+                    <p class="text-[10px] text-secondary">{{if .Notes}}{{.Notes}}{{else}}{{.CocktailName}} service details{{end}}</p>
+                  </div>
+                </div>
+                <span class="material-symbols-outlined text-secondary text-sm">north_east</span>
+              </div>
             {{end}}
 
-            <form method="post" action="/bartender/orders/{{.ID}}/assign" class="order-action order-action--control">
-              <label class="field">
-                <span class="field__label">Assign bartender</span>
-                <select name="bartender_id" class="input">
-                  <option value="">Assign to me</option>
-                  {{range $.Page.Bartenders}}
-                    <option value="{{.ID}}">{{.DisplayName}}</option>
-                  {{end}}
-                </select>
-              </label>
-              <button class="btn btn--small" type="submit">Save assignment</button>
-            </form>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              {{if $next}}
+                <form method="post" action="/bartender/orders/{{.ID}}/complete" class="m-0">
+                  <button class="bg-primary text-on-primary px-4 h-10 flex items-center justify-center rounded hover:opacity-90 transition-opacity text-[10px] font-bold uppercase tracking-wider" type="submit">Complete Order</button>
+                </form>
+              {{end}}
 
-            <form method="post" action="/bartender/orders/{{.ID}}/status" class="order-action order-action--control">
-              <label class="field">
-                <span class="field__label">Next status</span>
-                <select name="to_status" class="input">
-                  {{if eq .Status "PLACED"}}<option value="ACCEPTED">Accepted</option>{{end}}
-                  {{if eq .Status "ACCEPTED"}}<option value="IN_PROGRESS">In progress</option>{{end}}
-                  {{if eq .Status "IN_PROGRESS"}}<option value="READY">Ready</option>{{end}}
-                  {{if eq .Status "READY"}}<option value="DELIVERED">Delivered</option>{{end}}
-                </select>
-              </label>
-              <button class="btn btn--small" type="submit">Update status</button>
-            </form>
-
-            <form method="post" action="/bartender/orders/{{.ID}}/cancel" class="order-action order-action--simple" onsubmit="return confirm('Cancel order?')">
-              <button class="btn btn--small btn--danger" type="submit">Cancel order</button>
-            </form>
+              {{if and (ne .Status "DELIVERED") (ne .Status "CANCELLED")}}
+                <form method="post" action="/bartender/orders/{{.ID}}/cancel" class="m-0" onsubmit="return confirm('Cancel order?')">
+                  <button class="bg-surface-container-high text-on-background px-4 h-10 flex items-center justify-center rounded hover:bg-surface-variant transition-colors text-[10px] font-bold uppercase tracking-wider" type="submit">Cancel</button>
+                </form>
+              {{end}}
+            </div>
           </div>
         </article>
       {{end}}
     </div>
-  {{end}}
 
-  {{if not .Page.Orders}}
-    <section class="empty-state">
-      <h3 class="empty-state__title">Queue is clear</h3>
-      <p class="empty-state__body">New drink orders will appear here automatically as soon as they are placed.</p>
+    <section class="rounded-xl bg-surface-container-low px-8 py-10 mt-6" data-shell-search-empty-state hidden>
+      <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">No Results</p>
+      <h3 class="text-2xl font-medium tracking-tight text-primary mb-3">No live orders match that search.</h3>
+      <p class="text-secondary text-sm">Try a guest name, table, cocktail, or order number.</p>
+    </section>
+  {{else}}
+    <section class="rounded-xl bg-surface-container-low px-8 py-10">
+      <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">Queue Clear</p>
+      <h3 class="text-2xl font-medium tracking-tight text-primary mb-3">No active orders.</h3>
+      <p class="text-secondary text-sm">New drink orders will appear here automatically as soon as they are placed.</p>
     </section>
   {{end}}
 {{end}}

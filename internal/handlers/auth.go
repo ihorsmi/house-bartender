@@ -17,6 +17,7 @@ type Server struct {
 type ViewData struct {
 	Title        string
 	Path         string
+	ShellSearch  string
 	User         *db.User
 	Flashes      []app.Flash
 	PageTemplate string
@@ -28,6 +29,7 @@ func (s *Server) renderLayout(w http.ResponseWriter, r *http.Request, title, pag
 	data := ViewData{
 		Title:        title,
 		Path:         r.URL.Path,
+		ShellSearch:  strings.TrimSpace(r.URL.Query().Get("q")),
 		User:         s.App.CurrentUser(r),
 		Flashes:      s.App.PopFlashes(w, r),
 		PageTemplate: pageTemplate,
@@ -43,12 +45,13 @@ func (s *Server) renderPartial(w http.ResponseWriter, r *http.Request, templateN
 		path = pathOverride
 	}
 	data := ViewData{
-		Title:   "",
-		Path:    path,
-		User:    s.App.CurrentUser(r),
-		Flashes: nil,
-		Page:    page,
-		Now:     time.Now(),
+		Title:       "",
+		Path:        path,
+		ShellSearch: strings.TrimSpace(r.URL.Query().Get("q")),
+		User:        s.App.CurrentUser(r),
+		Flashes:     nil,
+		Page:        page,
+		Now:         time.Now(),
 	}
 	_ = s.App.Templates().ExecuteTemplate(w, templateName, data)
 }

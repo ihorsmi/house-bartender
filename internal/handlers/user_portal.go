@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"house-bartender-go/internal/app"
@@ -10,19 +11,29 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type UserHomePage struct {
-	FilterAlcohol string
-	FilterTag     string
-	IncludeIng    string
-	ExcludeIng    string
-	Cocktails     []db.Cocktail
+const cocktailLibraryPageSize = 10
+
+type CocktailLibraryPage struct {
+	Search       string
+	Spirit       string
+	Cocktails    []db.Cocktail
+	CurrentPage  int
+	TotalPages   int
+	PageNumbers  []int
+	TotalCount   int
+	ShowingStart int
+	ShowingEnd   int
+	HasPrev      bool
+	HasNext      bool
+	PrevPage     int
+	NextPage     int
 }
 
 type CocktailDetailPage struct {
-	Cocktail     db.Cocktail
-	Ingredients  []db.CocktailIngredient
-	TagList      []string
-	IsAvailable  bool
+	Cocktail    db.Cocktail
+	Ingredients []db.CocktailIngredient
+	TagList     []string
+	IsAvailable bool
 }
 
 type UserOrdersPage struct {
@@ -49,57 +60,102 @@ func (s *Server) UserHomeGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := s.buildUserCocktailsPage(r)
+	page := s.buildCocktailLibraryPage(r, true)
 	s.renderLayout(w, r, "Cocktails", "user_home.html", page)
 }
 
 func (s *Server) UserCocktailsPartialGet(w http.ResponseWriter, r *http.Request) {
-	page := s.buildUserCocktailsPage(r)
-	s.renderPartial(w, r, "cocktails_table.html", map[string]any{
-		"Cocktails": page.Cocktails,
-	}, "")
+	page := s.buildCocktailLibraryPage(r, true)
+	s.renderPartial(w, r, "library_results.html", page, "/")
 }
 
-func (s *Server) buildUserCocktailsPage(r *http.Request) UserHomePage {
+func (s *Server) buildCocktailLibraryPage(r *http.Request, onlyAvailable bool) CocktailLibraryPage {
 	q := r.URL.Query()
-	alc := strings.TrimSpace(q.Get("alc"))
-	if alc == "" {
-		alc = "all"
+	search := strings.TrimSpace(q.Get("q"))
+	spirit := normalizeSpiritFilter(q.Get("spirit"))
+	pageNumber := parsePositiveInt(q.Get("page"), 1)
+
+	cocks, _ := s.App.Store().Q.ListCocktailsComputed(onlyAvailable)
+	var (
+		out             []db.Cocktail
+		ingredientCache = map[int64][]db.CocktailIngredient{}
+	)
+
+	loadIngredients := func(cocktailID int64) []db.CocktailIngredient {
+		if cached, ok := ingredientCache[cocktailID]; ok {
+			return cached
+		}
+		ings, _ := s.App.Store().Q.GetCocktailIngredients(cocktailID)
+		ingredientCache[cocktailID] = ings
+		return ings
 	}
-	tag := strings.TrimSpace(q.Get("tag"))
-	inc := strings.TrimSpace(q.Get("include"))
-	exc := strings.TrimSpace(q.Get("exclude"))
 
-	cocks, _ := s.App.Store().Q.ListCocktailsComputed(true) // user sees available
-	// Apply filters
-	var out []db.Cocktail
 	for _, c := range cocks {
-		if !matchAlcohol(alc, c.Tags) {
+		var ings []db.CocktailIngredient
+		if search != "" || spirit != "" {
+			ings = loadIngredients(c.ID)
+		}
+		if !cocktailMatchesSearch(c, ings, search) {
 			continue
 		}
-		if tag != "" && !containsToken(c.Tags, tag) {
+		if !cocktailMatchesSpirit(c, ings, spirit) {
 			continue
 		}
-
-		if inc != "" || exc != "" {
-			ings, _ := s.App.Store().Q.GetCocktailIngredients(c.ID)
-			if inc != "" && !ingredientMatch(ings, inc) {
-				continue
-			}
-			if exc != "" && ingredientMatch(ings, exc) {
-				continue
-			}
-		}
-
 		out = append(out, c)
 	}
 
-	return UserHomePage{
-		FilterAlcohol: alc,
-		FilterTag:     tag,
-		IncludeIng:    inc,
-		ExcludeIng:    exc,
-		Cocktails:     out,
+	totalCount := len(out)
+	totalPages := 1
+	if totalCount > 0 {
+		totalPages = (totalCount + cocktailLibraryPageSize - 1) / cocktailLibraryPageSize
+	}
+	if pageNumber > totalPages {
+		pageNumber = totalPages
+	}
+	if pageNumber < 1 {
+		pageNumber = 1
+	}
+
+	start := 0
+	end := totalCount
+	if totalCount > 0 {
+		start = (pageNumber - 1) * cocktailLibraryPageSize
+		if start > totalCount {
+			start = totalCount
+		}
+		end = start + cocktailLibraryPageSize
+		if end > totalCount {
+			end = totalCount
+		}
+		out = out[start:end]
+	}
+
+	pageNumbers := make([]int, 0, totalPages)
+	for i := 1; i <= totalPages; i++ {
+		pageNumbers = append(pageNumbers, i)
+	}
+
+	showingStart := 0
+	showingEnd := 0
+	if totalCount > 0 {
+		showingStart = start + 1
+		showingEnd = end
+	}
+
+	return CocktailLibraryPage{
+		Search:       search,
+		Spirit:       spirit,
+		Cocktails:    out,
+		CurrentPage:  pageNumber,
+		TotalPages:   totalPages,
+		PageNumbers:  pageNumbers,
+		TotalCount:   totalCount,
+		ShowingStart: showingStart,
+		ShowingEnd:   showingEnd,
+		HasPrev:      pageNumber > 1,
+		HasNext:      pageNumber < totalPages,
+		PrevPage:     pageNumber - 1,
+		NextPage:     pageNumber + 1,
 	}
 }
 
@@ -194,6 +250,18 @@ func parseInt64(s string) (int64, bool) {
 	return n, n > 0
 }
 
+func parsePositiveInt(s string, fallback int) int {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return fallback
+	}
+	n, err := strconv.Atoi(s)
+	if err != nil || n <= 0 {
+		return fallback
+	}
+	return n
+}
+
 func splitCSV(s string) []string {
 	var out []string
 	for _, p := range strings.Split(s, ",") {
@@ -251,4 +319,82 @@ func ingredientMatch(ings []db.CocktailIngredient, q string) bool {
 		}
 	}
 	return false
+}
+
+func cocktailMatchesSearch(c db.Cocktail, ings []db.CocktailIngredient, search string) bool {
+	search = strings.ToLower(strings.TrimSpace(search))
+	if search == "" {
+		return true
+	}
+
+	fields := []string{
+		c.Name,
+		c.Description,
+		c.Tags,
+		c.Difficulty,
+	}
+	for _, field := range fields {
+		if strings.Contains(strings.ToLower(field), search) {
+			return true
+		}
+	}
+
+	for _, it := range ings {
+		if strings.Contains(strings.ToLower(it.ProductName), search) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func normalizeSpiritFilter(s string) string {
+	switch normalized := strings.TrimSpace(strings.ToLower(s)); normalized {
+	case "", "all", "all-spirits":
+		return ""
+	case "whiskey", "gin", "tequila", "rum":
+		return normalized
+	default:
+		return ""
+	}
+}
+
+func cocktailMatchesSpirit(c db.Cocktail, ings []db.CocktailIngredient, spirit string) bool {
+	spirit = normalizeSpiritFilter(spirit)
+	if spirit == "" {
+		return true
+	}
+
+	text := strings.ToLower(strings.Join([]string{c.Name, c.Description, c.Tags}, " "))
+	for _, token := range spiritTokens(spirit) {
+		if strings.Contains(text, token) {
+			return true
+		}
+	}
+
+	for _, it := range ings {
+		ingredientText := strings.ToLower(strings.Join([]string{it.ProductName, it.ProductCategory}, " "))
+		for _, token := range spiritTokens(spirit) {
+			if strings.Contains(ingredientText, token) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func spiritTokens(spirit string) []string {
+	switch spirit {
+	case "whiskey":
+		return []string{"whiskey", "whisky", "bourbon", "rye"}
+	case "gin":
+		return []string{"gin"}
+	case "tequila":
+		return []string{"tequila"}
+	case "rum":
+		return []string{"rum"}
+	default:
+		return nil
+	}
 }

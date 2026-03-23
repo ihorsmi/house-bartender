@@ -1,0 +1,50 @@
+{{define "library_results.html"}}
+{{$basePath := .Path}}
+{{$partialPath := "/partials/user/cocktails"}}
+{{$canManage := and .User (or (eq .User.Role "BARTENDER") (eq .User.Role "ADMIN"))}}
+{{if hasPrefix .Path "/bartender/cocktails"}}{{$partialPath = "/partials/bartender/cocktails"}}{{end}}
+
+{{if .Page.Cocktails}}
+  <div id="cocktailGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+    {{template "cocktails_table.html" .}}
+  </div>
+{{else}}
+  <section class="rounded-xl bg-surface-container-low px-8 py-10">
+    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">{{if or .Page.Search .Page.Spirit}}No Results{{else}}Collection Empty{{end}}</p>
+    <h3 class="text-2xl font-medium tracking-tight text-primary mb-3">{{if or .Page.Search .Page.Spirit}}No cocktails match that view.{{else if $canManage}}No cocktails in the library yet.{{else}}Nothing to show right now.{{end}}</h3>
+    <p class="text-secondary text-sm">{{if or .Page.Search .Page.Spirit}}Try a different search or switch to another spirit filter.{{else if $canManage}}Create the first cocktail to start filling the bartender library.{{else}}The live menu is empty at the moment, but new recipes will appear here automatically.{{end}}</p>
+    {{if and $canManage (not (or .Page.Search .Page.Spirit))}}
+      <a class="inline-flex mt-6 bg-primary text-on-primary px-4 py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:opacity-90 transition-all" href="/bartender/cocktails/new">Add Cocktail</a>
+    {{end}}
+  </section>
+{{end}}
+
+<footer class="mt-16 pt-8 border-t border-outline-variant/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+  <span class="text-[12px] text-secondary">{{if .Page.TotalCount}}Showing {{.Page.ShowingStart}}-{{.Page.ShowingEnd}} of {{.Page.TotalCount}}{{else}}Showing 0{{end}} {{if $canManage}}recipes{{else}}live recipes{{end}}</span>
+  {{if gt .Page.TotalPages 1}}
+    <div class="flex flex-wrap items-center gap-2">
+      {{if .Page.HasPrev}}
+        <a class="inline-flex h-10 w-10 items-center justify-center rounded-[4px] border border-black/5 bg-surface-container-low text-primary transition-colors hover:bg-surface-container-high" href="{{libraryURL $basePath .Page.Search .Page.Spirit .Page.PrevPage}}" data-hx-get="{{libraryURL $partialPath .Page.Search .Page.Spirit .Page.PrevPage}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL $basePath .Page.Search .Page.Spirit .Page.PrevPage}}">
+          <span class="material-symbols-outlined text-[18px] leading-none">chevron_left</span>
+        </a>
+      {{else}}
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-[4px] border border-black/5 bg-surface-container-low/60 text-secondary/50">
+          <span class="material-symbols-outlined text-[18px] leading-none">chevron_left</span>
+        </span>
+      {{end}}
+      {{range .Page.PageNumbers}}
+        <a class="{{if eq . $.Page.CurrentPage}}bg-primary text-on-primary{{else}}bg-surface-container-low text-primary hover:bg-surface-container-high{{end}} inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-[4px] border border-black/5 px-3 text-sm font-semibold transition-colors" href="{{libraryURL $basePath $.Page.Search $.Page.Spirit .}}" data-hx-get="{{libraryURL $partialPath $.Page.Search $.Page.Spirit .}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL $basePath $.Page.Search $.Page.Spirit .}}">{{.}}</a>
+      {{end}}
+      {{if .Page.HasNext}}
+        <a class="inline-flex h-10 w-10 items-center justify-center rounded-[4px] border border-black/5 bg-surface-container-low text-primary transition-colors hover:bg-surface-container-high" href="{{libraryURL $basePath .Page.Search .Page.Spirit .Page.NextPage}}" data-hx-get="{{libraryURL $partialPath .Page.Search .Page.Spirit .Page.NextPage}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL $basePath .Page.Search .Page.Spirit .Page.NextPage}}">
+          <span class="material-symbols-outlined text-[18px] leading-none">chevron_right</span>
+        </a>
+      {{else}}
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-[4px] border border-black/5 bg-surface-container-low/60 text-secondary/50">
+          <span class="material-symbols-outlined text-[18px] leading-none">chevron_right</span>
+        </span>
+      {{end}}
+    </div>
+  {{end}}
+</footer>
+{{end}}

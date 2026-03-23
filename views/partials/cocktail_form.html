@@ -1,258 +1,227 @@
 {{define "cocktail_form.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">Bartender portal</p>
-    <h1>{{if eq .Page.Mode "edit"}}Edit cocktail{{else}}New cocktail{{end}}</h1>
-    <p class="page-header__body">Build a recipe that is easy to follow during service. Use required ingredients for true blockers and keep menu visibility separate from orderability.</p>
-  </div>
+<section>
+  <header class="mb-12 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary mb-2">Bartender Editor</p>
+      <h1 class="text-[3.5rem] font-bold tracking-[-0.02em] leading-none mb-4">{{if eq .Page.Mode "edit"}}Edit Cocktail{{else}}New Cocktail{{end}}</h1>
+      <p class="text-secondary text-sm max-w-2xl">This editor borrows directly from the Stitch surfaces while keeping the current create and edit handlers, ingredient arrays, uploads, and publish state intact.</p>
+    </div>
+    <a class="px-4 py-2 bg-surface-container-low text-secondary text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-surface-container-high transition-colors" href="/bartender/cocktails">Cancel</a>
+  </header>
 
-  <div class="page-actions">
-    <a class="btn" href="/bartender/cocktails">Back to cocktails</a>
-  </div>
-</section>
-
-<form method="post" enctype="multipart/form-data"
-      action="{{if eq .Page.Mode "edit"}}/bartender/cocktails/{{.Page.Cocktail.ID}}/edit{{else}}/bartender/cocktails/new{{end}}"
-      class="page-grid page-grid--recipe"
-      data-ingredient-editor>
-  <div class="stack stack--lg">
-    <section class="panel">
-      <div class="section-heading">
-        <h2>Basic details</h2>
-        <p class="muted">The name, short description, and quick facts bartenders should recognize immediately.</p>
-      </div>
-
-      <div class="form--grid">
-        <label class="field span2">
-          <span class="field__label">Name</span>
-          <input name="name" value="{{.Page.Cocktail.Name}}" placeholder="Margarita" required>
-        </label>
-
-        <label class="field span2">
-          <span class="field__label">Short description</span>
-          <textarea name="description" rows="3" placeholder="Bright, citrusy, and served cold">{{.Page.Cocktail.Description}}</textarea>
-          <small class="field__hint">Keep this short enough to scan quickly on the menu.</small>
-        </label>
-
-        <label class="field span2">
-          <span class="field__label">Tags</span>
-          <input name="tags" value="{{.Page.Tags}}" placeholder="citrus, refreshing, strong">
-          <small class="field__hint">Use commas to separate tags.</small>
-        </label>
-
-        <label class="field">
-          <span class="field__label">Difficulty</span>
-          <select name="difficulty">
-            <option value="easy" {{if eq .Page.Cocktail.Difficulty "easy"}}selected{{end}}>Easy</option>
-            <option value="medium" {{if eq .Page.Cocktail.Difficulty "medium"}}selected{{end}}>Medium</option>
-            <option value="hard" {{if eq .Page.Cocktail.Difficulty "hard"}}selected{{end}}>Hard</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span class="field__label">Prep time (minutes)</span>
-          <input name="prep_time_minutes" type="number" min="1" step="1" value="{{.Page.Cocktail.PrepTimeMinutes}}">
-        </label>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <h2>Recipe ingredients</h2>
-        <p class="muted">Choose reusable ingredients, set quantities if they matter, and mark only true blockers as required.</p>
-      </div>
-
-      <div class="guide-grid">
-        <div class="guide-card">
-          <h3>Required ingredient</h3>
-          <p class="muted m0">If this ingredient is unavailable, the cocktail cannot be ordered.</p>
+  <form method="post" enctype="multipart/form-data" action="{{if eq .Page.Mode "edit"}}/bartender/cocktails/{{.Page.Cocktail.ID}}/edit{{else}}/bartender/cocktails/new{{end}}" class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6" data-ingredient-editor>
+    <div class="space-y-6">
+      <section class="bg-surface-container-low rounded-xl p-8">
+        <div class="flex justify-between items-end mb-8 gap-4">
+          <h2 class="text-[1.75rem] font-medium tracking-[-0.01em] text-primary">Basic Details</h2>
+          <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Recipe Identity</span>
         </div>
-        <div class="guide-card">
-          <h3>Optional ingredient</h3>
-          <p class="muted m0">Keep garnish-style extras on the recipe without blocking orders.</p>
-        </div>
-      </div>
 
-      <div class="ingredient-editor" data-ingredient-list>
-        {{range .Page.IngRows}}
-          {{$row := .}}
-          <div class="ingredient-row {{if $row.Required}}ingredient-row--required{{else}}ingredient-row--optional{{end}}" data-ingredient-row>
-            <div class="ingredient-row__header">
-              <div>
-                <div class="ingredient-row__eyebrow">Ingredient row</div>
-                <h3 class="ingredient-row__title" data-ingredient-title>Ingredient</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block md:col-span-2">
+            <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Name</span>
+            <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="name" value="{{.Page.Cocktail.Name}}" placeholder="Margarita" required>
+          </label>
+
+          <label class="block md:col-span-2">
+            <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Short Description</span>
+            <textarea class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg min-h-[110px]" name="description" placeholder="Bright, citrusy, and served cold">{{.Page.Cocktail.Description}}</textarea>
+          </label>
+
+          <label class="block md:col-span-2">
+            <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Tags</span>
+            <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="tags" value="{{.Page.Tags}}" placeholder="citrus, refreshing, strong">
+          </label>
+
+          <label class="block">
+            <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Difficulty</span>
+            <select class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="difficulty">
+              <option value="easy" {{if eq .Page.Cocktail.Difficulty "easy"}}selected{{end}}>Easy</option>
+              <option value="medium" {{if eq .Page.Cocktail.Difficulty "medium"}}selected{{end}}>Medium</option>
+              <option value="hard" {{if eq .Page.Cocktail.Difficulty "hard"}}selected{{end}}>Hard</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Prep Time (Minutes)</span>
+            <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="prep_time_minutes" type="number" min="1" step="1" value="{{.Page.Cocktail.PrepTimeMinutes}}">
+          </label>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-low rounded-xl p-8">
+        <div class="flex justify-between items-end mb-8 gap-4">
+          <div>
+            <h2 class="text-[1.75rem] font-medium tracking-[-0.01em] text-primary">Service Build</h2>
+            <p class="text-secondary text-sm mt-2">Required ingredients block ordering when unavailable. Optional ingredients remain visible without hiding the cocktail.</p>
+          </div>
+          <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Ingredients</span>
+        </div>
+
+        <div class="space-y-4" data-ingredient-list>
+          {{range .Page.IngRows}}
+            {{$row := .}}
+            <div class="bg-surface-container-highest rounded-xl p-6 space-y-4" data-ingredient-row>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Ingredient Row</p>
+                  <h3 class="text-base font-medium tracking-tight" data-ingredient-title>Ingredient</h3>
+                </div>
+                <span class="px-3 py-1 rounded bg-surface-container-lowest text-[10px] font-bold uppercase tracking-wider" data-ingredient-rule-badge>{{if .Required}}Required{{else}}Optional{{end}}</span>
               </div>
-              <span class="ingredient-row__rule {{if $row.Required}}ingredient-row__rule--required{{else}}ingredient-row__rule--optional{{end}}" data-ingredient-rule-badge>
-                {{if $row.Required}}Required{{else}}Optional{{end}}
-              </span>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="block md:col-span-2">
+                  <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Ingredient</span>
+                  <select class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_product_id">
+                    <option value="">Choose ingredient...</option>
+                    {{range $.Page.Products}}
+                      <option value="{{.ID}}" {{if eq .ID $row.ProductID}}selected{{end}}>{{if .Category}}{{.Category}} - {{end}}{{.Name}}</option>
+                    {{end}}
+                  </select>
+                </label>
+
+                <label class="block">
+                  <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Amount</span>
+                  <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_quantity" type="number" min="0" step="0.01" inputmode="decimal" placeholder="45" value="{{.QuantityStr}}">
+                </label>
+
+                <label class="block">
+                  <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Unit</span>
+                  <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_unit" placeholder="ml, dash, slice" value="{{.Unit}}">
+                </label>
+
+                <label class="block">
+                  <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Recipe Rule</span>
+                  <select class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_required">
+                    <option value="1" {{if .Required}}selected{{end}}>Required</option>
+                    <option value="0" {{if not .Required}}selected{{end}}>Optional</option>
+                  </select>
+                </label>
+
+                <div class="flex items-end">
+                  <button class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-white transition-colors" type="button" data-ingredient-remove>Remove Row</button>
+                </div>
+              </div>
+
+              <p class="text-secondary text-sm" data-ingredient-rule-help>{{if .Required}}If this ingredient is unavailable, the cocktail is hidden from ordering.{{else}}This ingredient stays on the recipe, but it does not block ordering.{{end}}</p>
+            </div>
+          {{end}}
+        </div>
+
+        <div class="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <button class="bg-primary text-on-primary px-4 py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:opacity-90 transition-all" type="button" data-ingredient-add>Add Ingredient</button>
+          <span class="text-secondary text-sm">Blank rows are ignored when you save, so it is safe to leave one unfinished.</span>
+        </div>
+
+        <template data-ingredient-template>
+          <div class="bg-surface-container-highest rounded-xl p-6 space-y-4" data-ingredient-row>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Ingredient Row</p>
+                <h3 class="text-base font-medium tracking-tight" data-ingredient-title>Ingredient</h3>
+              </div>
+              <span class="px-3 py-1 rounded bg-surface-container-lowest text-[10px] font-bold uppercase tracking-wider" data-ingredient-rule-badge>Required</span>
             </div>
 
-            <div class="ingredient-row__grid">
-              <label class="field ingredient-row__field ingredient-row__field--product">
-                <span class="field__label">Ingredient</span>
-                <select name="ingredient_product_id">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="block md:col-span-2">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Ingredient</span>
+                <select class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_product_id">
                   <option value="">Choose ingredient...</option>
-                  {{range $.Page.Products}}
-                    <option value="{{.ID}}" {{if eq .ID $row.ProductID}}selected{{end}}>{{.Category}} - {{.Name}}</option>
+                  {{range .Page.Products}}
+                    <option value="{{.ID}}">{{if .Category}}{{.Category}} - {{end}}{{.Name}}</option>
                   {{end}}
                 </select>
               </label>
 
-              <label class="field ingredient-row__field">
-                <span class="field__label">Amount</span>
-                <input name="ingredient_quantity" type="number" min="0" step="0.01" inputmode="decimal" placeholder="45" value="{{$row.QuantityStr}}">
+              <label class="block">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Amount</span>
+                <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_quantity" type="number" min="0" step="0.01" inputmode="decimal" placeholder="45">
               </label>
 
-              <label class="field ingredient-row__field">
-                <span class="field__label">Unit</span>
-                <input name="ingredient_unit" placeholder="ml, dash, slice" value="{{$row.Unit}}">
+              <label class="block">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Unit</span>
+                <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_unit" placeholder="ml, dash, slice">
               </label>
 
-              <label class="field ingredient-row__field">
-                <span class="field__label">Recipe rule</span>
-                <select name="ingredient_required">
-                  <option value="1" {{if $row.Required}}selected{{end}}>Required</option>
-                  <option value="0" {{if not $row.Required}}selected{{end}}>Optional</option>
+              <label class="block">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Recipe Rule</span>
+                <select class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="ingredient_required">
+                  <option value="1" selected>Required</option>
+                  <option value="0">Optional</option>
                 </select>
               </label>
 
-              <div class="ingredient-row__action">
-                <button class="btn btn--ghost btn--small" type="button" data-ingredient-remove>Remove row</button>
+              <div class="flex items-end">
+                <button class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-white transition-colors" type="button" data-ingredient-remove>Remove Row</button>
               </div>
             </div>
 
-            <p class="ingredient-row__hint" data-ingredient-rule-help>
-              {{if $row.Required}}If this ingredient is unavailable, the cocktail is hidden from ordering.{{else}}This ingredient stays on the recipe, but it does not block ordering.{{end}}
-            </p>
+            <p class="text-secondary text-sm" data-ingredient-rule-help>If this ingredient is unavailable, the cocktail is hidden from ordering.</p>
           </div>
-        {{end}}
-      </div>
+        </template>
+      </section>
 
-      <div class="panel__actions panel__actions--between">
-        <button class="btn btn--ghost" type="button" data-ingredient-add>Add ingredient</button>
-        <span class="muted tiny">Blank rows are ignored when you save, so it is safe to leave one unfinished.</span>
-      </div>
-
-      <template data-ingredient-template>
-        <div class="ingredient-row ingredient-row--required" data-ingredient-row>
-          <div class="ingredient-row__header">
-            <div>
-              <div class="ingredient-row__eyebrow">Ingredient row</div>
-              <h3 class="ingredient-row__title" data-ingredient-title>Ingredient</h3>
-            </div>
-            <span class="ingredient-row__rule ingredient-row__rule--required" data-ingredient-rule-badge>Required</span>
-          </div>
-
-          <div class="ingredient-row__grid">
-            <label class="field ingredient-row__field ingredient-row__field--product">
-              <span class="field__label">Ingredient</span>
-              <select name="ingredient_product_id">
-                <option value="">Choose ingredient...</option>
-                {{range .Page.Products}}
-                  <option value="{{.ID}}">{{.Category}} - {{.Name}}</option>
-                {{end}}
-              </select>
-            </label>
-
-            <label class="field ingredient-row__field">
-              <span class="field__label">Amount</span>
-              <input name="ingredient_quantity" type="number" min="0" step="0.01" inputmode="decimal" placeholder="45">
-            </label>
-
-            <label class="field ingredient-row__field">
-              <span class="field__label">Unit</span>
-              <input name="ingredient_unit" placeholder="ml, dash, slice">
-            </label>
-
-            <label class="field ingredient-row__field">
-              <span class="field__label">Recipe rule</span>
-              <select name="ingredient_required">
-                <option value="1" selected>Required</option>
-                <option value="0">Optional</option>
-              </select>
-            </label>
-
-            <div class="ingredient-row__action">
-              <button class="btn btn--ghost btn--small" type="button" data-ingredient-remove>Remove row</button>
-            </div>
-          </div>
-
-          <p class="ingredient-row__hint" data-ingredient-rule-help>If this ingredient is unavailable, the cocktail is hidden from ordering.</p>
+      <section class="bg-surface-container-low rounded-xl p-8">
+        <div class="flex justify-between items-end mb-8 gap-4">
+          <h2 class="text-[1.75rem] font-medium tracking-[-0.01em] text-primary">Build Steps</h2>
+          <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Instructions</span>
         </div>
-      </template>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <h2>Instructions</h2>
-        <p class="muted">Write the build steps clearly so another bartender can make the drink the same way.</p>
-      </div>
-
-      <label class="field">
-        <span class="field__label">Preparation steps</span>
-        <textarea name="instructions" rows="8" placeholder="Shake with ice, fine strain into a chilled coupe, garnish with lime...">{{.Page.Cocktail.Instructions}}</textarea>
-        <small class="field__hint">Short, practical steps are easiest to follow during service.</small>
-      </label>
-    </section>
-  </div>
-
-  <aside class="stack stack--lg">
-    <section class="panel panel--sticky">
-      <div class="section-heading">
-        <h2>Menu visibility and media</h2>
-        <p class="muted">Keep guest-facing visibility separate from recipe availability logic.</p>
-      </div>
-
-      <div class="stack">
-        <label class="field">
-          <span class="field__label">Image</span>
-          <input name="image" type="file" accept="image/*">
-          <small class="field__hint">Optional. Add a photo only when it helps guests recognize the drink.</small>
-
-          {{if .Page.Cocktail.ImagePath}}
-            <div class="media-preview">
-              <img class="thumb" src="{{.Page.Cocktail.ImagePath}}" alt="Current cocktail image">
-              <div class="muted tiny">Current image: {{.Page.Cocktail.ImagePath}}</div>
-            </div>
-          {{end}}
+        <label class="block">
+          <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Preparation Steps</span>
+          <textarea class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg min-h-[180px]" name="instructions" placeholder="Shake with ice, fine strain into a chilled coupe, garnish with lime...">{{.Page.Cocktail.Instructions}}</textarea>
         </label>
+      </section>
+    </div>
 
-        <div class="field field--checkbox">
-          <span class="field__label">Show on menu</span>
-          <label class="checkbox">
-            <input type="hidden" name="is_enabled" value="0">
-            <input type="checkbox" name="is_enabled" value="1" {{if .Page.Cocktail.IsEnabled}}checked{{end}}>
-            <span>Guests can see this cocktail on the menu</span>
+    <aside class="space-y-6">
+      <section class="bg-surface-container-low rounded-xl p-8">
+        <div class="mb-6">
+          <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Media And Presence</p>
+          <h2 class="text-xl font-medium tracking-tight">Menu Visibility</h2>
+        </div>
+
+        <div class="space-y-5">
+          <div class="relative aspect-square bg-surface-container-lowest rounded-xl overflow-hidden">
+            <img class="w-full h-full object-cover" alt="Current cocktail image" src="{{if .Page.Cocktail.ImagePath}}{{.Page.Cocktail.ImagePath}}{{else}}{{featurePlaceholderImage}}{{end}}">
+          </div>
+
+          <label class="block">
+            <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Image</span>
+            <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="image" type="file" accept="image/*">
           </label>
-          <small class="field__hint">Even when this is on, the cocktail becomes orderable only when every required ingredient is available.</small>
-        </div>
-      </div>
 
-      <div class="panel__section">
-        <div class="section-heading">
-          <h2>Before you save</h2>
-          <p class="muted">A quick check to keep recipes easy to use during service.</p>
+          <label class="block">
+            <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Show On Menu</span>
+            <span class="flex items-center gap-3 bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 rounded-lg text-sm text-secondary">
+              <input type="hidden" name="is_enabled" value="0">
+              <input class="rounded border-outline-variant/30 text-primary focus:ring-primary" type="checkbox" name="is_enabled" value="1" {{if .Page.Cocktail.IsEnabled}}checked{{end}}>
+              Guests can see this cocktail when it is enabled.
+            </span>
+          </label>
         </div>
+      </section>
 
-        <ul class="helper-list m0">
+      <section class="bg-surface-container-low rounded-xl p-8">
+        <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Quick Check</p>
+        <h2 class="text-xl font-medium tracking-tight mb-4">Before You Save</h2>
+        <ul class="space-y-3 text-sm text-secondary">
           <li>Use ingredient names bartenders can find instantly.</li>
           <li>Mark garnish-style extras as optional, not required.</li>
           <li>Keep instructions short and written in service order.</li>
         </ul>
-      </div>
+      </section>
 
-      <div class="panel__section">
-        <div class="section-heading">
-          <h2>Final actions</h2>
-          <p class="muted">One clear primary action for this recipe.</p>
+      <section class="bg-surface-container-highest rounded-xl p-8">
+        <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Publish Changes</p>
+        <h2 class="text-xl font-medium tracking-tight mb-6">Final Actions</h2>
+        <div class="space-y-3">
+          <button class="w-full bg-primary text-on-primary py-4 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:opacity-90 transition-all" type="submit">{{if eq .Page.Mode "edit"}}Save Cocktail{{else}}Create Cocktail{{end}}</button>
+          <a class="w-full inline-flex items-center justify-center bg-surface-container-lowest py-4 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:bg-white transition-colors" href="/bartender/cocktails">Cancel</a>
         </div>
-
-        <div class="panel__actions panel__actions--full">
-          <button class="btn btn--primary" type="submit">{{if eq .Page.Mode "edit"}}Save cocktail{{else}}Create cocktail{{end}}</button>
-          <a class="btn" href="/bartender/cocktails">Cancel</a>
-        </div>
-      </div>
-    </section>
-  </aside>
-</form>
+      </section>
+    </aside>
+  </form>
+</section>
 {{end}}

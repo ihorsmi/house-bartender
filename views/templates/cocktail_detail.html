@@ -1,121 +1,112 @@
 {{define "cocktail_detail.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">{{if and .User (eq .User.Role "USER")}}User portal{{else}}Recipe{{end}}</p>
-    <h1>{{.Page.Cocktail.Name}}</h1>
-    {{if .Page.Cocktail.Description}}<p class="page-header__body">{{.Page.Cocktail.Description}}</p>{{end}}
-  </div>
-
-  <div class="page-actions">
-    {{if and .User (eq .User.Role "BARTENDER")}}
-      <a class="btn" href="/bartender/cocktails">Back to cocktails</a>
-    {{else if and .User (eq .User.Role "ADMIN")}}
-      <a class="btn" href="/bartender/cocktails">Back to cocktails</a>
-    {{else}}
-      <a class="btn" href="/">Back to menu</a>
-    {{end}}
-  </div>
-</section>
-
-<section class="panel">
-  <div class="row row--gap row--wrap">
-    <div class="grow">
-      <div class="chips">
-        {{range .Page.TagList}}<span class="chip">{{.}}</span>{{end}}
-        <span class="chip chip--soft">{{.Page.Cocktail.Difficulty}}</span>
-        <span class="chip chip--soft">{{.Page.Cocktail.PrepTimeMinutes}} min</span>
-        {{if .Page.IsAvailable}}
-          <span class="chip chip--ok">Available</span>
-        {{else}}
-          <span class="chip chip--warn">Unavailable</span>
-        {{end}}
+<section>
+  <header class="mb-12 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+    <div class="space-y-4 max-w-3xl">
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">{{if and .User (eq .User.Role "USER")}}Recipe Detail{{else}}Service Reference{{end}}</p>
+      <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none text-primary">{{.Page.Cocktail.Name}}</h1>
+      {{with stitchCocktailLabel .Page.Cocktail.Name}}<p class="text-[11px] font-bold uppercase tracking-[0.22em] text-secondary">{{.}}</p>{{end}}
+      <p class="text-secondary text-base max-w-2xl">{{if .Page.Cocktail.Description}}{{.Page.Cocktail.Description}}{{else}}A service-ready recipe presented in the same editorial system as the exported Stitch screens.{{end}}</p>
+      <div class="flex flex-wrap gap-2">
+        {{if .Page.Cocktail.Difficulty}}<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-medium rounded">{{humanizeEnum .Page.Cocktail.Difficulty}}</span>{{end}}
+        <span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-medium rounded">{{cocktailAlcoholLabel .Page.Cocktail.Tags}}</span>
+        <span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-medium rounded">{{.Page.Cocktail.PrepTimeMinutes}} min prep</span>
+        {{range .Page.TagList}}<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-medium rounded">{{.}}</span>{{end}}
+        <span class="px-3 py-1 rounded {{if .Page.IsAvailable}}bg-primary text-on-primary{{else}}bg-error/10 text-error{{end}} text-[10px] font-bold uppercase tracking-wider">{{if .Page.IsAvailable}}Available{{else}}Unavailable{{end}}</span>
       </div>
     </div>
 
-    {{if .Page.Cocktail.ImagePath}}
-      <img class="thumb" src="{{.Page.Cocktail.ImagePath}}" alt="Cocktail image">
-    {{end}}
-  </div>
+    <div class="flex items-center gap-3">
+      <a class="px-4 py-2 bg-surface-container-low text-secondary text-[11px] font-bold uppercase tracking-wider rounded-lg hover:bg-surface-container-high transition-colors" href="{{if and .User (or (eq .User.Role "BARTENDER") (eq .User.Role "ADMIN"))}}/bartender/cocktails{{else}}/{{end}}">{{if and .User (or (eq .User.Role "BARTENDER") (eq .User.Role "ADMIN"))}}Back To Library{{else}}Back To Menu{{end}}</a>
+    </div>
+  </header>
 
-  <div class="panel__section">
-    <div class="section-heading">
-      <h2>Ingredients</h2>
-      <p class="muted">Required ingredients affect availability. Optional ones stay in the recipe for flexibility.</p>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+    <div class="lg:col-span-8 space-y-8">
+      <div class="relative aspect-[4/3] bg-surface-container-low rounded-xl overflow-hidden">
+        <img alt="{{stitchCocktailAlt .Page.Cocktail.Name}}" class="w-full h-full object-cover" src="{{cocktailHeroImage .Page.Cocktail.Name .Page.Cocktail.ImagePath}}">
+      </div>
+
+      <section class="bg-surface-container-low rounded-xl p-8">
+        <div class="flex justify-between items-end mb-8 gap-4">
+          <h2 class="text-[1.75rem] font-medium tracking-[-0.01em] text-primary">Build Sheet</h2>
+          <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Ingredients</span>
+        </div>
+        <div class="space-y-4">
+          {{range .Page.Ingredients}}
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b border-outline-variant/10 last:border-b-0">
+              <div>
+                <p class="text-sm font-semibold tracking-tight text-primary">{{.ProductName}}</p>
+                <p class="text-[12px] text-secondary">{{if .Quantity}}{{fmtQty .Quantity}} {{end}}{{.Unit}}{{if .ProductCategory}} | {{.ProductCategory}}{{end}}</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-medium rounded">{{if .Required}}Required{{else}}Optional{{end}}</span>
+                <span class="px-3 py-1 rounded {{if .ProductAvail}}bg-surface-container-highest text-primary{{else}}bg-error/10 text-error{{end}} text-[10px] font-bold uppercase tracking-wider">{{if .ProductAvail}}In Stock{{else}}Unavailable{{end}}</span>
+              </div>
+            </div>
+          {{end}}
+        </div>
+      </section>
+
+      <section class="bg-surface-container-low rounded-xl p-8">
+        <div class="flex justify-between items-end mb-8 gap-4">
+          <h2 class="text-[1.75rem] font-medium tracking-[-0.01em] text-primary">Service Sequence</h2>
+          <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Instructions</span>
+        </div>
+        <div class="text-secondary text-sm leading-7 whitespace-pre-line">{{.Page.Cocktail.Instructions}}</div>
+      </section>
     </div>
 
-    <ul class="list">
-      {{range .Page.Ingredients}}
-        <li class="{{if and .Required (not .ProductAvail)}}bad{{end}}">
-          <strong>{{.ProductName}}</strong>
-          {{ $q := fmtQty .Quantity }}
-          {{if $q}}{{$q}} {{.Unit}}{{else}}{{.Unit}}{{end}}
-          {{if .Required}}<span class="tag">required</span>{{else}}<span class="tag tag--soft">optional</span>{{end}}
-          {{if not .ProductAvail}}<span class="tag tag--danger">not available</span>{{end}}
-        </li>
+    <aside class="lg:col-span-4 space-y-8">
+      <section class="bg-surface-container-low p-6 rounded-xl space-y-5">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Recipe Status</p>
+          <h3 class="text-[1.25rem] font-medium tracking-tight text-primary">Ordering Window</h3>
+        </div>
+        <p class="text-secondary text-sm">{{if .Page.IsAvailable}}This recipe is currently orderable with the live inventory on hand.{{else}}Ordering is paused until the required ingredient set is available again.{{end}}</p>
+        <div class="w-full h-0.5 bg-surface-container-highest relative">
+          <div class="absolute top-0 left-0 h-full bg-primary {{if .Page.IsAvailable}}w-[82%]{{else}}w-[28%]{{end}}"></div>
+        </div>
+      </section>
+
+      {{if and .User (eq .User.Role "USER")}}
+        <section class="bg-surface-container-low rounded-xl p-8">
+          <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Place Order</p>
+          <h3 class="text-xl font-medium tracking-tight mb-6">Send To Queue</h3>
+          {{if not .Page.IsAvailable}}
+            <p class="mb-6 text-xs font-semibold uppercase tracking-[0.12em] text-error">This cocktail is not available right now.</p>
+          {{end}}
+          <form method="post" action="/orders" class="space-y-5">
+            <input type="hidden" name="cocktail_id" value="{{.Page.Cocktail.ID}}">
+            <label class="block">
+              <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Quantity</span>
+              <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="quantity" type="number" min="1" max="10" value="1">
+            </label>
+            <label class="block">
+              <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Location</span>
+              <select class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="location" required>
+                <option value="">Choose...</option>
+                <option>Living room</option>
+                <option>Kitchen</option>
+                <option>Balcony</option>
+                <option>Desk</option>
+                <option>Other (use notes)</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Notes</span>
+              <textarea class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg min-h-[120px]" name="notes" placeholder="Less sweet, no ice, deliver quietly..."></textarea>
+            </label>
+            <button class="w-full bg-primary text-on-primary py-4 rounded-lg text-[0.6875rem] uppercase tracking-[0.2em] font-bold hover:opacity-90 transition-all disabled:opacity-50" type="submit" {{if not .Page.IsAvailable}}disabled{{end}}>Order Now</button>
+          </form>
+        </section>
+      {{else}}
+        <section class="bg-surface-container-low p-6 rounded-xl">
+          <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Portal Mode</p>
+          <h3 class="text-[1.25rem] font-medium tracking-tight text-primary mb-3">Reference Only</h3>
+          <p class="text-secondary text-sm">Ordering remains available only in the user portal. Bartender and admin access keeps this page as a reference surface.</p>
+        </section>
       {{end}}
-    </ul>
-  </div>
-
-  <div class="panel__section">
-    <div class="section-heading">
-      <h2>Instructions</h2>
-    </div>
-
-    <pre class="pre">{{.Page.Cocktail.Instructions}}</pre>
+    </aside>
   </div>
 </section>
-
-{{if and .User (eq .User.Role "USER")}}
-  <section class="panel">
-    <div class="panel__header">
-      <div>
-        <h2>Place an order</h2>
-        <p class="muted">Send the request straight to the bartender queue.</p>
-      </div>
-    </div>
-
-    {{if not .Page.IsAvailable}}
-      <div class="alert alert--warn">This cocktail is not available right now.</div>
-    {{end}}
-
-    <form method="post" action="/orders" class="form">
-      <input type="hidden" name="cocktail_id" value="{{.Page.Cocktail.ID}}">
-
-      <label class="field">
-        <span class="field__label">Quantity</span>
-        <input name="quantity" type="number" min="1" max="10" value="1">
-      </label>
-
-      <label class="field">
-        <span class="field__label">Location</span>
-        <select name="location" required>
-          <option value="">Choose...</option>
-          <option>Living room</option>
-          <option>Kitchen</option>
-          <option>Balcony</option>
-          <option>Desk</option>
-          <option>Other (use notes)</option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span class="field__label">Notes</span>
-        <textarea name="notes" rows="3" placeholder="e.g. less sweet, no ice..."></textarea>
-      </label>
-
-      <div class="panel__actions panel__actions--start">
-        <button class="btn btn--primary" type="submit" {{if not .Page.IsAvailable}}disabled{{end}}>Order now</button>
-      </div>
-    </form>
-  </section>
-{{else}}
-  <section class="panel">
-    <div class="panel__header">
-      <div>
-        <h2>Ordering</h2>
-        <p class="muted">Ordering is available only from the user portal.</p>
-      </div>
-    </div>
-  </section>
-{{end}}
 {{end}}

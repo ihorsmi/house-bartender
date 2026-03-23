@@ -12,7 +12,12 @@ type Queries struct {
 }
 
 func unixNow() int64 { return time.Now().Unix() }
-func b2i(b bool) int { if b { return 1 }; return 0 }
+func b2i(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
 func i2b(i int) bool { return i != 0 }
 
 func tFromUnix(u int64) time.Time {
@@ -29,6 +34,51 @@ func computedAvailExpr() string {
 		WHEN p.stock_count IS NOT NULL THEN (CASE WHEN p.stock_count > 0 THEN 1 ELSE 0 END)
 		ELSE (CASE WHEN p.is_available = 1 THEN 1 ELSE 0 END)
 	END)`
+}
+
+type rowScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanPushSubscription(scanner rowScanner) (*PushSubscription, error) {
+	var sub PushSubscription
+	var enabled int
+	var createdAt, updatedAt int64
+	var lastSeen, lastSuccess, lastFailure sql.NullInt64
+
+	if err := scanner.Scan(
+		&sub.ID,
+		&sub.BartenderUserID,
+		&sub.Endpoint,
+		&sub.P256DH,
+		&sub.Auth,
+		&sub.UserAgent,
+		&sub.DeviceLabel,
+		&enabled,
+		&createdAt,
+		&updatedAt,
+		&lastSeen,
+		&lastSuccess,
+		&lastFailure,
+		&sub.FailureCount,
+	); err != nil {
+		return nil, err
+	}
+
+	sub.Enabled = i2b(enabled)
+	sub.CreatedAt = tFromUnix(createdAt)
+	sub.UpdatedAt = tFromUnix(updatedAt)
+	if lastSeen.Valid {
+		sub.LastSeenAt = tFromUnix(lastSeen.Int64)
+	}
+	if lastSuccess.Valid {
+		sub.LastSuccessAt = tFromUnix(lastSuccess.Int64)
+	}
+	if lastFailure.Valid {
+		sub.LastFailureAt = tFromUnix(lastFailure.Int64)
+	}
+
+	return &sub, nil
 }
 
 /* ---------------- Users ---------------- */
@@ -623,6 +673,119 @@ func (q *Queries) ListOrderEvents(orderID int64) ([]OrderEvent, error) {
 		out = append(out, e)
 	}
 	return out, nil
+}
+
+/* ---------------- Push subscriptions ---------------- */
+
+func (q *Queries) UpsertPushSubscription(p UpsertPushSubscriptionParams) error {
+	now := unixNow()
+	_, err := q.db.Exec(`
+		INSERT INTO push_subscriptions(
+			bartender_user_id, endpoint, p256dh, auth, user_agent, device_label, enabled,
+			created_at, updated_at, last_seen_at, last_success_at, last_failure_at, failure_count
+		)
+		VALUES(?,?,?,?,?,?,1,?,?,?,?,NULL,0)
+		ON CONFLICT(endpoint) DO UPDATE SET
+			bartender_user_id=excluded.bartender_user_id,
+			p256dh=excluded.p256dh,
+			auth=excluded.auth,
+			user_agent=COALESCE(NULLIF(excluded.user_agent,''), push_subscriptions.user_agent),
+			device_label=COALESCE(NULLIF(excluded.device_label,''), push_subscriptions.device_label),
+			enabled=1,
+			updated_at=excluded.updated_at,
+			last_seen_at=excluded.last_seen_at,
+			last_failure_at=NULL,
+			failure_count=0`,
+		p.BartenderUserID, p.Endpoint, p.P256DH, p.Auth, p.UserAgent, p.DeviceLabel,
+		now, now, now, nil)
+	return err
+}
+
+func (q *Queries) ListPushSubscriptionsForUser(userID int64) ([]PushSubscription, error) {
+	rows, err := q.db.Query(`
+		SELECT
+			id,bartender_user_id,endpoint,p256dh,auth,COALESCE(user_agent,''),COALESCE(device_label,''),enabled,
+			created_at,updated_at,last_seen_at,last_success_at,last_failure_at,failure_count
+		FROM push_subscriptions
+		WHERE bartender_user_id=?
+		ORDER BY enabled DESC, updated_at DESC, id DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []PushSubscription
+	for rows.Next() {
+		sub, err := scanPushSubscription(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *sub)
+	}
+	return out, nil
+}
+
+func (q *Queries) ListPushSubscriptionsForOnDutyBartenders() ([]PushSubscription, error) {
+	rows, err := q.db.Query(`
+		SELECT
+			ps.id,ps.bartender_user_id,ps.endpoint,ps.p256dh,ps.auth,COALESCE(ps.user_agent,''),COALESCE(ps.device_label,''),ps.enabled,
+			ps.created_at,ps.updated_at,ps.last_seen_at,ps.last_success_at,ps.last_failure_at,ps.failure_count
+		FROM push_subscriptions ps
+		JOIN users u ON u.id = ps.bartender_user_id
+		WHERE ps.enabled = 1
+		  AND u.role = 'BARTENDER'
+		  AND u.is_active = 1
+		  AND u.on_duty = 1
+		ORDER BY ps.updated_at DESC, ps.id DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []PushSubscription
+	for rows.Next() {
+		sub, err := scanPushSubscription(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *sub)
+	}
+	return out, nil
+}
+
+func (q *Queries) DisablePushSubscriptionForUser(userID int64, endpoint string) error {
+	_, err := q.db.Exec(`
+		UPDATE push_subscriptions
+		SET enabled=0, updated_at=?
+		WHERE bartender_user_id=? AND endpoint=?`, unixNow(), userID, endpoint)
+	return err
+}
+
+func (q *Queries) MarkPushSubscriptionSuccess(endpoint string) error {
+	now := unixNow()
+	_, err := q.db.Exec(`
+		UPDATE push_subscriptions
+		SET enabled=1, updated_at=?, last_success_at=?, failure_count=0
+		WHERE endpoint=?`, now, now, endpoint)
+	return err
+}
+
+func (q *Queries) MarkPushSubscriptionFailure(endpoint string) error {
+	now := unixNow()
+	_, err := q.db.Exec(`
+		UPDATE push_subscriptions
+		SET updated_at=?, last_failure_at=?, failure_count=failure_count+1
+		WHERE endpoint=?`, now, now, endpoint)
+	return err
+}
+
+func (q *Queries) DisablePushSubscriptionByEndpoint(endpoint string) error {
+	now := unixNow()
+	_, err := q.db.Exec(`
+		UPDATE push_subscriptions
+		SET enabled=0, updated_at=?, last_failure_at=?, failure_count=failure_count+1
+		WHERE endpoint=?`, now, now, endpoint)
+	return err
 }
 
 /* ---------------- Debug ---------------- */

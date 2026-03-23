@@ -29,6 +29,10 @@ func main() {
 		DBPath:    getenv("DB_PATH", "/data/housebartender.db"),
 		UploadDir: getenv("UPLOAD_DIR", "/data/uploads"),
 
+		VAPIDPublicKey:  strings.TrimSpace(os.Getenv("VAPID_PUBLIC_KEY")),
+		VAPIDPrivateKey: strings.TrimSpace(os.Getenv("VAPID_PRIVATE_KEY")),
+		VAPIDSubject:    strings.TrimSpace(os.Getenv("VAPID_SUBJECT")),
+
 		BootstrapAdminEmail:    os.Getenv("BOOTSTRAP_ADMIN_EMAIL"),
 		BootstrapAdminPassword: os.Getenv("BOOTSTRAP_ADMIN_PASSWORD"),
 		BootstrapAdminName:     os.Getenv("BOOTSTRAP_ADMIN_NAME"),
@@ -74,6 +78,8 @@ func main() {
 
 	r.Get("/onboarding", h.OnboardingGet)
 	r.Post("/onboarding", h.OnboardingPost)
+	r.Get("/manifest.webmanifest", h.ManifestGet)
+	r.Get("/sw.js", h.ServiceWorkerGet)
 
 	// Static + uploads
 	fileServer(r, "/static", http.Dir("static"))
@@ -120,12 +126,19 @@ func main() {
 		br.Get("/orders", h.BartenderOrdersGet)
 		br.Post("/orders/{id}/accept", h.OrderAcceptPost)
 		br.Post("/orders/{id}/assign", h.OrderAssignPost)
+		br.Post("/orders/{id}/complete", h.OrderCompletePost)
 		br.Post("/orders/{id}/status", h.OrderStatusPost)
 		br.Post("/orders/{id}/cancel", h.OrderCancelPost)
 
 		br.Get("/partials/products", h.BartenderProductsPartialGet)
 		br.Get("/partials/cocktails", h.BartenderCocktailsPartialGet)
 		br.Get("/partials/orders", h.BartenderOrdersPartialGet)
+
+		br.Group(func(nr chi.Router) {
+			nr.Use(a.RequireRole(app.RoleBartender))
+			nr.Post("/notifications/subscribe", h.PushSubscribePost)
+			nr.Post("/notifications/unsubscribe", h.PushUnsubscribePost)
+		})
 	})
 
 	r.Route("/partials/bartender", func(pr chi.Router) {

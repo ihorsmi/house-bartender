@@ -1,54 +1,102 @@
 {{define "bartender_dashboard.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">Bartender portal</p>
-    <h1>Dashboard</h1>
-    <p class="page-header__body">Keep an eye on queue volume and jump into the areas that need attention first.</p>
-  </div>
+<section>
+  <header class="mb-16 space-y-2">
+    <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">Operations</p>
+    <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none text-primary">Service Dashboard</h1>
+    <p class="text-secondary max-w-xl text-base">Real-time oversight of beverage operations and queue velocity. Maintain the flow of the room with clear live visibility.</p>
+  </header>
 
-  <div class="page-actions">
-    <form method="post" action="/bartender/duty">
-      <button class="btn {{if .Page.OnDuty}}btn--primary{{end}}" type="submit">
-        {{if .Page.OnDuty}}On duty{{else}}Off duty{{end}}
-      </button>
-    </form>
-  </div>
-</section>
-
-<section class="stack stack--lg">
-  <section class="panel">
-    <div class="panel__header">
-      <div>
-        <h2>Queue snapshot</h2>
-        <p class="muted">Live counts update as orders move through service.</p>
-      </div>
+  <section class="grid grid-cols-2 md:grid-cols-4 gap-px bg-outline-variant/15 mb-20 overflow-hidden rounded-lg border border-outline-variant/10">
+    <div class="bg-surface p-8 flex flex-col gap-1">
+      <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Placed</span>
+      <span class="text-3xl font-light tracking-tight text-primary">{{printf "%02d" .Page.CountPlaced}}</span>
     </div>
-
-    <div class="stats">
-      <div class="stat"><div class="stat__n">{{.Page.CountPlaced}}</div><div class="stat__l">Placed</div></div>
-      <div class="stat"><div class="stat__n">{{.Page.CountAccepted}}</div><div class="stat__l">Accepted</div></div>
-      <div class="stat"><div class="stat__n">{{.Page.CountInProgress}}</div><div class="stat__l">In progress</div></div>
-      <div class="stat"><div class="stat__n">{{.Page.CountReady}}</div><div class="stat__l">Ready</div></div>
+    <div class="bg-surface p-8 flex flex-col gap-1">
+      <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Accepted</span>
+      <span class="text-3xl font-light tracking-tight text-primary">{{printf "%02d" .Page.CountAccepted}}</span>
     </div>
-
-    <div class="panel__actions panel__actions--start">
-      <a class="btn btn--primary" href="/bartender/orders">Open order queue</a>
-      <a class="btn" href="/bartender/products">Ingredients</a>
-      <a class="btn" href="/bartender/cocktails">Cocktails</a>
+    <div class="bg-surface p-8 flex flex-col gap-1">
+      <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">In Progress</span>
+      <span class="text-3xl font-light tracking-tight text-primary">{{printf "%02d" .Page.CountInProgress}}</span>
+    </div>
+    <div class="bg-surface p-8 flex flex-col gap-1">
+      <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Ready</span>
+      <span class="text-3xl font-light tracking-tight text-primary">{{printf "%02d" .Page.CountReady}}</span>
     </div>
   </section>
 
-  <section class="panel">
-    <div class="inventory-toolbar">
-      <div class="inventory-toolbar__copy">
-        <h2>Newest orders</h2>
-        <p class="muted">This preview uses the same live partial as the full queue.</p>
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_40%] gap-12 lg:gap-16">
+    <section>
+      <div class="flex justify-between items-end mb-8 gap-4">
+        <h2 class="text-[1.75rem] font-medium tracking-[-0.01em] text-primary">Live Orders</h2>
+        <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Updated Just Now</span>
       </div>
-    </div>
 
-    <div id="ordersList">
-      <div data-auto-refresh="orders"></div>
-    </div>
-  </section>
+      <div id="ordersList">
+        {{template "dashboard_orders_preview.html" .}}
+      </div>
+
+      <div class="mt-12">
+        <a class="text-[12px] font-semibold text-primary border-b border-primary/20 pb-1 hover:border-primary transition-all" href="/bartender/orders">View All Order History</a>
+      </div>
+      <div data-auto-refresh="orders" hidden></div>
+    </section>
+
+    <aside class="space-y-12">
+      <div class="bg-surface-container-low p-10 rounded-xl">
+        <h3 class="text-[1rem] font-medium text-primary mb-6">Operations</h3>
+        <div class="flex flex-col gap-4">
+          <a class="w-full bg-primary text-on-primary py-4 rounded-lg text-sm font-semibold tracking-tight shadow-sm hover:opacity-95 transition-all text-center" href="/bartender/orders">Open full order queue</a>
+          <div class="grid grid-cols-2 gap-4">
+            <a class="flex flex-col items-center justify-center p-6 bg-surface-container-highest rounded-lg gap-2 hover:bg-surface-variant transition-colors group" href="/bartender/products">
+              <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">liquor</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-secondary group-hover:text-primary transition-colors">Ingredients</span>
+            </a>
+            <a class="flex flex-col items-center justify-center p-6 bg-surface-container-highest rounded-lg gap-2 hover:bg-surface-variant transition-colors group" href="/bartender/cocktails">
+              <span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">menu_book</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-secondary group-hover:text-primary transition-colors">Cocktails</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-2">
+        <h3 class="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-secondary mb-6">Staff Performance</h3>
+        <div class="space-y-6">
+          <div class="flex justify-between items-end">
+            <span class="text-[12px] text-primary">Avg. Preparation Time</span>
+            <span class="text-[13px] font-bold text-primary">{{.Page.AverageOrderAge}}</span>
+          </div>
+          <div class="w-full h-0.5 bg-surface-container-highest relative">
+            <div class="absolute top-0 left-0 h-full bg-primary w-[65%]"></div>
+          </div>
+          <div class="flex justify-between items-end mt-8">
+            <span class="text-[12px] text-primary">Claimed by Team</span>
+            <span class="text-[13px] font-bold text-primary">{{.Page.ClaimedCoverage}}%</span>
+          </div>
+          <div class="w-full h-0.5 bg-surface-container-highest relative">
+            <div class="absolute top-0 left-0 h-full bg-primary" style="width: {{.Page.ClaimedCoverage}}%;"></div>
+          </div>
+          <div class="flex justify-between items-end mt-8">
+            <span class="text-[12px] text-primary">Ready to Serve</span>
+            <span class="text-[13px] font-bold text-primary">{{.Page.ReadyCoverage}}%</span>
+          </div>
+          <div class="w-full h-0.5 bg-surface-container-highest relative">
+            <div class="absolute top-0 left-0 h-full bg-primary" style="width: {{.Page.ReadyCoverage}}%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative overflow-hidden rounded-xl aspect-[4/3] grayscale hover:grayscale-0 transition-all duration-700">
+        <img alt="{{stitchCocktailAlt .Page.FeaturedName}}" class="object-cover w-full h-full" src="{{dashboardFeatureImage .Page.FeaturedName .Page.FeaturedImage}}">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
+        <div class="absolute bottom-6 left-6 text-white">
+          <p class="text-[10px] font-bold uppercase tracking-widest">{{if .Page.FeaturedImage}}Seasonal Feature{{else}}Service Note{{end}}</p>
+          <h4 class="text-lg font-medium">{{.Page.FeaturedName}}</h4>
+          <p class="text-xs text-white/80 mt-1">{{.Page.FeaturedContext}}</p>
+        </div>
+      </div>
+    </aside>
+  </div>
 </section>
 {{end}}

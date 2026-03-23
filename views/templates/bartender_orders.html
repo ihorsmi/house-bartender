@@ -1,22 +1,92 @@
 {{define "bartender_orders.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">Bartender portal</p>
-    <h1>Order queue</h1>
-    <p class="page-header__body">New orders appear automatically. Claim a drink, hand it over cleanly when needed, and keep statuses moving so guests know what is happening.</p>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel__header">
-    <div>
-      <h2>Live queue</h2>
-      <p class="muted">Sorted newest first and refreshed with SSE.</p>
+<section>
+  <header class="mb-16 flex flex-col xl:flex-row justify-between xl:items-end gap-8">
+    <div class="max-w-2xl">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+        <span class="font-label text-[10px] tracking-[0.15em] text-secondary uppercase">Live System Active</span>
+      </div>
+      <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none mb-4 text-primary">Live Queue</h1>
+      <p class="text-secondary text-sm max-w-md">Monitor open tickets, keep assignments visible, and clear completed orders with a single action.</p>
     </div>
-  </div>
 
-  <div id="ordersList">
-    {{template "orders_list.html" .}}
+    <div class="flex flex-col xl:items-end min-w-[220px]">
+      <span class="text-xs font-semibold font-label tracking-widest text-secondary uppercase mb-1">Queue Load</span>
+      <div class="w-48 h-1 bg-surface-container-high overflow-hidden rounded-full">
+        <div class="h-full bg-primary" style="width: {{if ge (len .Page.Orders) 10}}100{{else if ge (len .Page.Orders) 7}}65{{else if ge (len .Page.Orders) 4}}45{{else if ge (len .Page.Orders) 1}}20{{else}}0{{end}}%;"></div>
+      </div>
+      <span class="text-[10px] text-secondary mt-1">{{len .Page.Orders}} Active Orders | 12m Est. Wait</span>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+    <div class="lg:col-span-8 space-y-6">
+      <div id="ordersList">
+        {{template "orders_list.html" .}}
+      </div>
+    </div>
+
+    <div class="lg:col-span-4 space-y-8">
+      <section class="bg-surface-container-low p-6 rounded-xl space-y-6">
+        <div>
+          <h4 class="font-label text-[10px] tracking-[0.2em] uppercase text-secondary mb-4">Station Efficiency</h4>
+          <div class="flex justify-between items-end">
+            <div>
+              <p class="text-3xl font-bold tracking-tighter">{{if .Page.Orders}}94%{{else}}100%{{end}}</p>
+              <p class="text-[10px] text-secondary">{{if .Page.Orders}}Pre-Prep Completion{{else}}Queue Clear{{end}}</p>
+            </div>
+            <div class="flex gap-0.5 items-end h-8">
+              <div class="w-1 bg-primary h-[40%]"></div>
+              <div class="w-1 bg-primary h-[60%]"></div>
+              <div class="w-1 bg-primary h-[85%]"></div>
+              <div class="w-1 bg-primary h-[70%]"></div>
+              <div class="w-1 bg-primary h-[95%]"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-secondary">Ice Level</span>
+            <span class="font-bold">Critical (12%)</span>
+          </div>
+          <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+            <div class="w-[12%] h-full bg-error"></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-secondary">Glassware</span>
+            <span class="font-bold">Optimum</span>
+          </div>
+          <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+            <div class="w-[88%] h-full bg-primary"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="p-2">
+        <h4 class="font-label text-[10px] tracking-[0.2em] uppercase text-secondary mb-6">Activity Feed</h4>
+        <div class="space-y-6 relative">
+          <div class="absolute left-[7px] top-1 bottom-1 w-[1px] bg-outline-variant/30"></div>
+          {{if .Page.Orders}}
+            {{range $i, $order := .Page.Orders}}
+              {{if lt $i 3}}
+                <div class="relative pl-6 flex flex-col gap-1">
+                  <div class="absolute left-0 top-1.5 w-[15px] h-[15px] bg-background rounded-full {{if eq $i 0}}border-2 border-primary{{else}}border border-outline-variant{{end}}"></div>
+                  <p class="text-[11px] {{if eq $i 0}}font-bold{{else}}font-medium text-secondary{{end}}">Order #{{$order.ID}} {{orderStatusLabel $order.Status}}</p>
+                  <p class="text-[10px] text-secondary">{{if $order.AssignedBartenderName}}{{$order.AssignedBartenderName}} | {{end}}{{since $order.CreatedAt $.Now}} ago</p>
+                </div>
+              {{end}}
+            {{end}}
+          {{else}}
+            <div class="relative pl-6 flex flex-col gap-1">
+              <div class="absolute left-0 top-1.5 w-[15px] h-[15px] bg-background border border-outline-variant rounded-full"></div>
+              <p class="text-[11px] font-medium text-secondary">Queue is clear</p>
+              <p class="text-[10px] text-secondary">New orders will surface here automatically.</p>
+            </div>
+          {{end}}
+        </div>
+      </section>
+    </div>
   </div>
 </section>
 {{end}}

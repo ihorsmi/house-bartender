@@ -1,31 +1,61 @@
 {{define "admin_settings.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">Admin portal</p>
-    <h1>Settings</h1>
-    <p class="page-header__body">Environment details and maintenance actions for this installation.</p>
-  </div>
-</section>
+<section>
+  <header class="mb-12 space-y-2">
+    <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary mb-2">Admin Settings</p>
+    <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none text-primary">System Control</h1>
+    <p class="text-secondary text-sm max-w-2xl">Environment details and maintenance tools are presented in the same exported visual language, with only the backend-supported actions still wired live.</p>
+  </header>
 
-<section class="panel">
-  <div class="panel__header">
-    <div>
-      <h2>System details</h2>
-      <p class="muted">Use this page for quick environment checks and idempotent seed operations.</p>
-    </div>
-  </div>
+  <section class="grid grid-cols-2 md:grid-cols-4 gap-px bg-outline-variant/15 mb-12 overflow-hidden rounded-lg border border-outline-variant/10">
+    {{range .Page.CountList}}
+      <div class="bg-surface p-8 flex flex-col gap-1">
+        <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">{{.Label}}</span>
+        <span class="text-3xl font-light tracking-tight text-primary">{{.Value}}</span>
+      </div>
+    {{end}}
+  </section>
 
-  <div class="kv">
-    <div class="kv__k">DB Path</div><div class="kv__v">{{.Page.DBPath}}</div>
-    <div class="kv__k">Data Dir</div><div class="kv__v">{{.Page.DataDir}}</div>
-    <div class="kv__k">Counts</div><div class="kv__v">{{.Page.Counts}}</div>
-  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <section class="lg:col-span-2 bg-surface-container-low rounded-xl p-8">
+      <div class="flex justify-between items-end mb-8 gap-4">
+        <h2 class="text-[1.75rem] font-medium tracking-[-0.01em] text-primary">Environment</h2>
+        <span class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">System Paths</span>
+      </div>
+      <div class="space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 border-b border-outline-variant/10">
+          <div>
+            <p class="text-sm font-semibold tracking-tight text-primary">Database Path</p>
+            <p class="text-[12px] text-secondary">Persistent storage target for the live installation.</p>
+          </div>
+          <code class="text-[12px] bg-surface-container-highest px-3 py-2 rounded-lg">{{.Page.DBPath}}</code>
+        </div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 border-b border-outline-variant/10">
+          <div>
+            <p class="text-sm font-semibold tracking-tight text-primary">Data Directory</p>
+            <p class="text-[12px] text-secondary">Uploads, database assets, and writable runtime storage.</p>
+          </div>
+          <code class="text-[12px] bg-surface-container-highest px-3 py-2 rounded-lg">{{.Page.DataDir}}</code>
+        </div>
+        <div class="py-4">
+          <p class="text-sm font-semibold tracking-tight text-primary mb-2">Raw Count Summary</p>
+          <p class="text-[12px] text-secondary">{{.Page.Counts}}</p>
+        </div>
+      </div>
+    </section>
 
-  <div class="panel__actions panel__actions--start">
-    <a class="btn" href="/health">Health</a>
-    <form method="post" action="/admin/settings/seed">
-      <button class="btn btn--primary" type="submit">Run seed</button>
-    </form>
+    <section class="bg-surface-container-highest rounded-xl p-8 flex flex-col justify-between">
+      <div>
+        <span class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 block">Maintenance</span>
+        <h3 class="text-xl font-medium tracking-tight mb-4">Supported Actions</h3>
+        <p class="text-secondary text-sm mb-8">Health remains a direct endpoint. Seed still triggers the existing idempotent catalog loader without introducing destructive behavior.</p>
+      </div>
+      <div class="space-y-3">
+        <a class="w-full inline-flex items-center justify-center bg-surface-container-lowest text-primary py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:bg-white transition-colors" href="/health">Health</a>
+        <form method="post" action="/admin/settings/seed">
+          <button class="w-full bg-primary text-on-primary py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:opacity-90 transition-all" type="submit">Run Seed</button>
+        </form>
+      </div>
+    </section>
   </div>
 </section>
 {{end}}

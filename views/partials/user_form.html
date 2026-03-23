@@ -1,38 +1,37 @@
 {{define "user_form.html"}}
-<div class="panel__header">
-  <div>
-    <h2>Create user</h2>
-    <p class="muted">Add a guest, bartender, or admin account with the access they need from day one.</p>
+<div>
+  <div class="mb-6">
+    <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2">Create User</p>
+    <h2 class="text-xl font-medium tracking-tight text-primary">Add Staff Or Guest Access</h2>
+    <p class="text-secondary text-sm mt-3">Create a guest, bartender, or admin account with the same backend rules the app already enforces.</p>
   </div>
+
+  <form method="post" action="/admin/users" class="space-y-5">
+    <label class="block">
+      <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Email</span>
+      <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="email" type="email" placeholder="person@example.com" required>
+    </label>
+
+    <label class="block">
+      <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Display Name</span>
+      <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="display_name" placeholder="Jordan" required>
+    </label>
+
+    <label class="block">
+      <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Role</span>
+      <select class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="role">
+        <option value="USER">User</option>
+        <option value="BARTENDER">Bartender</option>
+        <option value="ADMIN">Admin</option>
+      </select>
+    </label>
+
+    <label class="block">
+      <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Password</span>
+      <input class="w-full bg-surface-container-lowest border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="password" type="password" minlength="8" placeholder="At least 8 characters" required>
+    </label>
+
+    <button class="w-full bg-primary text-on-primary py-4 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:opacity-90 transition-all" type="submit">Create User</button>
+  </form>
 </div>
-
-<form method="post" action="/admin/users" class="form form--grid">
-  <label class="field">
-    <span class="field__label">Email</span>
-    <input name="email" type="email" placeholder="person@example.com" required>
-  </label>
-
-  <label class="field">
-    <span class="field__label">Display name</span>
-    <input name="display_name" placeholder="Jordan" required>
-  </label>
-
-  <label class="field">
-    <span class="field__label">Role</span>
-    <select name="role">
-      <option value="USER">User</option>
-      <option value="BARTENDER">Bartender</option>
-      <option value="ADMIN">Admin</option>
-    </select>
-  </label>
-
-  <label class="field">
-    <span class="field__label">Password</span>
-    <input name="password" type="password" minlength="8" placeholder="At least 8 characters" required>
-  </label>
-
-  <div class="panel__actions panel__actions--full span2">
-    <button class="btn btn--primary" type="submit">Create user</button>
-  </div>
-</form>
 {{end}}

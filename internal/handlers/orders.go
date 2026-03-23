@@ -146,6 +146,51 @@ func (s *Server) OrderAssignPost(w http.ResponseWriter, r *http.Request) {
 	s.redirect(w, r, "/bartender/orders")
 }
 
+func (s *Server) OrderCompletePost(w http.ResponseWriter, r *http.Request) {
+	u := s.App.CurrentUser(r)
+	if u == nil {
+		s.redirect(w, r, "/login")
+		return
+	}
+
+	idStr := chi.URLParam(r, "id")
+	oid, ok := parseInt64(idStr)
+	if !ok {
+		s.redirect(w, r, "/bartender/orders")
+		return
+	}
+
+	o, _ := s.App.Store().Q.GetOrderByID(oid)
+	if o == nil {
+		s.redirect(w, r, "/bartender/orders")
+		return
+	}
+	if o.Status == "DELIVERED" || o.Status == "CANCELLED" {
+		s.redirect(w, r, "/bartender/orders")
+		return
+	}
+
+	if o.AssignedBartenderID == nil {
+		_ = s.App.Store().Q.AssignOrder(oid, &u.ID)
+	}
+
+	current := o.Status
+	for next := nextOrderTransition(current); next != ""; next = nextOrderTransition(current) {
+		if err := s.App.Store().Q.UpdateOrderStatus(oid, current, next, &u.ID); err != nil {
+			s.App.AddFlash(w, r, app.FlashError, "Could not complete the order.")
+			s.redirect(w, r, "/bartender/orders")
+			return
+		}
+		current = next
+		if current == "DELIVERED" {
+			break
+		}
+	}
+
+	s.broadcastOrderUpdated(oid)
+	s.redirect(w, r, "/bartender/orders")
+}
+
 func (s *Server) OrderStatusPost(w http.ResponseWriter, r *http.Request) {
 	u := s.App.CurrentUser(r)
 	if u == nil {
@@ -243,5 +288,20 @@ func allowedTransition(from, to string) bool {
 		return to == "DELIVERED" || to == "CANCELLED"
 	default:
 		return false
+	}
+}
+
+func nextOrderTransition(status string) string {
+	switch strings.TrimSpace(strings.ToUpper(status)) {
+	case "PLACED":
+		return "ACCEPTED"
+	case "ACCEPTED":
+		return "IN_PROGRESS"
+	case "IN_PROGRESS":
+		return "READY"
+	case "READY":
+		return "DELIVERED"
+	default:
+		return ""
 	}
 }

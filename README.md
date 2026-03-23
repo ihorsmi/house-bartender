@@ -10,12 +10,12 @@ It keeps the stack simple:
 - SQLite persistence
 - SSE live updates
 
-Version `1.0.4` focuses on a reliable cocktail catalog view switch:
+Version `1.0.5` focuses on a full cross-portal refresh and a cleaner service workflow:
 
-- fixed recipe library line/grid switching in bartender and admin views
-- replaced single flip buttons with explicit line and grid view controls
-- kept compact line view as the default cocktail layout across bartender and user catalogs
-- preserved the faster stacked layouts and inline inventory workflow improvements from 1.0.3
+- unified the visual shell and typography across login, guest, bartender, and admin screens
+- moved guest ordering into a dedicated cocktail detail page with clearer live status tracking
+- redesigned bartender dashboard, queue, inventory, and cocktail editor flows for faster service
+- aligned admin user and system control screens with the same management surfaces and navigation logic
 
 ## Table of contents
 
@@ -33,33 +33,31 @@ Version `1.0.4` focuses on a reliable cocktail catalog view switch:
 
 ## Highlights
 
-- Browse only cocktails that are actually orderable right now.
-- Manage ingredients, stock, and manual availability from the bartender inventory screen.
-- Clear tracked stock back to blank and return to manual availability directly from inventory.
-- Create and edit cocktails with recipe ingredients, instructions, and menu visibility controls.
-- Switch cocktail browsing between default line view and optional grid view using explicit view buttons.
-- Work the live order queue with assignment and status updates.
-- Manage users, roles, passwords, and bartender duty from the admin portal.
-- Use the app in light or dark mode, with the theme saved in `localStorage`.
+- Browse only cocktails that are actually orderable right now, with spirit filters and shared search.
+- Open a dedicated cocktail detail page before ordering, with ingredient visibility and availability status.
+- Track guest orders with bartender assignment and status timeline updates.
+- Run the bartender queue with a single `Complete Order` action while keeping event history intact.
+- Manage inventory from a search-first stock room with inline stock controls and a streamlined editor.
+- Create and edit cocktails with ingredient rules, uploads, instructions, and menu visibility controls.
+- Manage users, roles, passwords, bartender duty, and system maintenance from aligned admin screens.
+- Dismiss login, duty, and system flash notifications reliably across portals.
 
 ## Portals
 
 ### User portal
 
-- Browse available cocktails in default line view, with optional grid view
-- Filter by alcohol, tags, and ingredient include/exclude rules
-- View cocktail details and recipe notes
+- Browse available cocktails with spirit filters and shared top-shell search
+- Open recipe detail pages with hero imagery, ingredient status, and service notes
 - Place orders with quantity, location, and notes
-- Track order history and timeline updates
+- Track order history with bartender assignment and status timeline updates
 
 ### Bartender portal
 
-- View dashboard counts and newest order previews in a cleaner stacked layout
-- Manage ingredient inventory and stock
-- Mark ingredients available or unavailable directly from the list
-- Create, edit, show, and hide cocktails from the menu
-- Switch the cocktail library between default line view and optional grid view with explicit controls
-- Run the live order queue with SSE updates
+- View dashboard counts, queue preview, and service shortcuts in one shared shell
+- Manage ingredient inventory from a search-first stock room with inline stock controls
+- Create, edit, show, and hide cocktails from the menu with the redesigned editor
+- Review the bartender library with shared search, spirit filters, and recipe detail pages
+- Run the live order queue with SSE updates and a one-click completion flow
 
 ### Admin portal
 
@@ -67,7 +65,7 @@ Version `1.0.4` focuses on a reliable cocktail catalog view switch:
 - Assign `USER`, `BARTENDER`, and `ADMIN` roles
 - Enable or disable access
 - Control bartender duty where it applies
-- Run idempotent seed actions and review system details
+- Run idempotent seed actions and review system details from `System Control`
 
 ## Tech stack
 
@@ -190,25 +188,57 @@ go test ./...
 
 ### Login
 
-Polished entry screen with persistent theme toggle.
+Minimal authorization screen for returning staff and admins. The main `Authorize Access` action keeps the entry flow direct and consistent with the rest of the release.
 
-![Login screen](docs/screenshots/loginscreen.png)
+![Login screen](docs/screenshots/loginform.png)
 
-### User portal
+### User library
 
-Browse cocktails with the cleaned-up catalog layout.
+The guest-facing `The Library` screen now uses spirit chips such as `All Spirits`, `Whiskey`, `Gin`, `Tequila`, and `Rum` alongside shared search to surface live recipes faster.
 
-![Cocktails screen](docs/screenshots/cocktailsscreen.png)
+![User library](docs/screenshots/userlibrary.png)
 
-Track placed, accepted, in-progress, ready, and delivered orders.
+### Cocktail detail and order form
 
-![User orders](docs/screenshots/userorders.png)
+Guests now order from a dedicated recipe detail page instead of a cramped inline card. The `Order Now` flow keeps quantity, location, notes, and ingredient availability together in one screen.
 
-### Bartender portal
+![User order form](docs/screenshots/userorderform.png)
 
-Work the live queue with assignment and status controls sized for fast service.
+### User order history
+
+The guest queue view now emphasizes bartender assignment and live status transitions, making it easier to see when a drink is picked up, prepared, ready, or delivered.
+
+![User order history](docs/screenshots/userorderhistory.png)
+
+### Service dashboard
+
+The bartender landing screen now combines live counts, order preview, and direct shortcuts into queue, inventory, and catalog work. It is designed to feel like an operations hub instead of a utility page.
+
+![Bartender dashboard](docs/screenshots/bartenderdashboard.png)
+
+### Live queue
+
+`Live Queue` now keeps open tickets visible with a simpler action model. The key change is the single `Complete Order` action, which reduces bartender steps without dropping the event history guests see later.
 
 ![Bartender orders](docs/screenshots/bartenderorders.png)
+
+### Inventory
+
+The inventory screen is now search-first, with inline stock adjustments and a cleaner header. The floating `Add Ingredient` action keeps editor access close without crowding the table.
+
+![Bartender inventory](docs/screenshots/bartenderingridients.png)
+
+### Cocktail editor
+
+The bartender editor now uses ingredient rows with `Required` and `Optional` rules, plus clearer save and publish actions. `Add Ingredient` and `Save Cocktail` are the core controls for building service-ready recipes.
+
+![Bartender cocktail editor](docs/screenshots/bartenderaddcoctails.png)
+
+### Admin users
+
+The admin directory now presents account editing, role changes, password rotation, access toggles, and bartender duty controls in one consistent management surface.
+
+![Admin users](docs/screenshots/adminportal-users.png)
 
 ## Troubleshooting
 

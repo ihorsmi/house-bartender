@@ -1,0 +1,30 @@
+{{define "dashboard_orders_preview.html"}}
+{{if .Page.Orders}}
+  <div class="w-full space-y-6">
+    {{range .Page.Orders}}
+      <article class="group flex items-center justify-between py-4 border-b border-outline-variant/10 hover:bg-surface-container-low transition-all px-2 -mx-2" data-shell-search-item="#{{.ID}} {{.CocktailName}} {{.Location}} {{.UserDisplayName}} {{.Status}} {{.AssignedBartenderName}} {{.Notes}}">
+        <div class="flex flex-col gap-1 min-w-0">
+          <span class="text-[10px] font-bold text-secondary">#{{.ID}}{{if .Location}} | {{.Location}}{{end}}</span>
+          <span class="text-[13px] font-medium text-primary">{{.CocktailName}}{{if gt .Quantity 1}} ({{.Quantity}}){{end}}</span>
+        </div>
+        <div class="flex items-center gap-8 shrink-0">
+          <span class="text-[12px] text-secondary">{{since .CreatedAt $.Now}} ago</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 {{if eq .Status "READY"}}bg-primary text-on-primary{{else if eq .Status "PLACED"}}bg-surface-container-highest text-primary{{else}}bg-surface-container-high text-primary{{end}}">{{orderStatusLabel .Status}}</span>
+        </div>
+      </article>
+    {{end}}
+  </div>
+
+  <section class="rounded-xl bg-surface-container-low px-8 py-10 mt-6" data-shell-search-empty-state hidden>
+    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">No Results</p>
+    <h3 class="text-2xl font-medium tracking-tight text-primary mb-3">No live orders match that search.</h3>
+    <p class="text-secondary text-sm">Try a cocktail name, guest name, location, or order number.</p>
+  </section>
+{{else}}
+  <section class="rounded-xl bg-surface-container-low px-8 py-10">
+    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">Queue Clear</p>
+    <h3 class="text-2xl font-medium tracking-tight text-primary mb-3">No active orders right now.</h3>
+    <p class="text-secondary text-sm">New drink requests will appear here automatically as soon as they are placed.</p>
+  </section>
+{{end}}
+{{end}}

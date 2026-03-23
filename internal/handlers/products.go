@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -22,10 +24,11 @@ type productFormInput struct {
 }
 
 func (s *Server) ProductCreatePost(w http.ResponseWriter, r *http.Request) {
+	search, category, status := inventoryFiltersFromRequest(r)
 	in, ok := parseProductFormInput(r)
 	if !ok {
 		s.App.AddFlash(w, r, app.FlashError, "Name and category are required.")
-		s.redirect(w, r, "/bartender/products")
+		s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 		return
 	}
 
@@ -40,20 +43,21 @@ func (s *Server) ProductCreatePost(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		s.App.AddFlash(w, r, app.FlashError, "Could not create ingredient (name might already exist).")
-		s.redirect(w, r, "/bartender/products")
+		s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 		return
 	}
 
 	s.broadcastInventory()
 	s.App.AddFlash(w, r, app.FlashSuccess, "Ingredient created.")
-	s.redirect(w, r, "/bartender/products")
+	s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 }
 
 func (s *Server) ProductTogglePost(w http.ResponseWriter, r *http.Request) {
+	search, category, status := inventoryFiltersFromRequest(r)
 	idStr := chi.URLParam(r, "id")
 	id, ok := parseInt64(idStr)
 	if !ok {
-		s.redirect(w, r, "/bartender/products")
+		s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 		return
 	}
 	_ = r.ParseForm()
@@ -65,7 +69,7 @@ func (s *Server) ProductTogglePost(w http.ResponseWriter, r *http.Request) {
 		s.renderProductsTablePartial(w, r)
 		return
 	}
-	s.redirect(w, r, "/bartender/products")
+	s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 }
 
 func (s *Server) ProductEditGet(w http.ResponseWriter, r *http.Request) {
@@ -82,13 +86,8 @@ func (s *Server) ProductEditGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	search := r.URL.Query().Get("q")
-	products, _ := s.App.Store().Q.ListProducts(search)
-	page := BartenderProductsPage{
-		Search:   search,
-		Products: products,
-		Form:     productFormStateFromProduct(*p),
-	}
+	search, category, status := inventoryFiltersFromRequest(r)
+	page := s.buildBartenderProductsPage(search, category, status, productFormStateFromProduct(*p, inventoryURL("/bartender/products/"+idStr+"/edit", search, category, status)))
 	s.renderLayout(w, r, "Edit Ingredient", "bartender_products.html", page)
 }
 
@@ -100,16 +99,17 @@ func (s *Server) ProductEditPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	search, category, status := inventoryFiltersFromRequest(r)
 	existing, _ := s.App.Store().Q.GetProductByID(id)
 	if existing == nil {
-		s.redirect(w, r, "/bartender/products")
+		s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 		return
 	}
 
 	in, ok := parseProductFormInput(r)
 	if !ok {
 		s.App.AddFlash(w, r, app.FlashError, "Name and category are required.")
-		s.redirect(w, r, "/bartender/products/"+idStr+"/edit")
+		s.redirect(w, r, inventoryURL("/bartender/products/"+idStr+"/edit", search, category, status))
 		return
 	}
 
@@ -124,20 +124,21 @@ func (s *Server) ProductEditPost(w http.ResponseWriter, r *http.Request) {
 		StockCount:    in.StockCount,
 	}); err != nil {
 		s.App.AddFlash(w, r, app.FlashError, "Update failed (name might already exist).")
-		s.redirect(w, r, "/bartender/products/"+idStr+"/edit")
+		s.redirect(w, r, inventoryURL("/bartender/products/"+idStr+"/edit", search, category, status))
 		return
 	}
 
 	s.broadcastInventory()
 	s.App.AddFlash(w, r, app.FlashSuccess, "Ingredient updated.")
-	s.redirect(w, r, "/bartender/products")
+	s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 }
 
 func (s *Server) ProductStockPost(w http.ResponseWriter, r *http.Request) {
+	search, category, status := inventoryFiltersFromRequest(r)
 	idStr := chi.URLParam(r, "id")
 	id, ok := parseInt64(idStr)
 	if !ok {
-		s.redirect(w, r, "/bartender/products")
+		s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 		return
 	}
 	_ = r.ParseForm()
@@ -156,19 +157,20 @@ func (s *Server) ProductStockPost(w http.ResponseWriter, r *http.Request) {
 		s.renderProductsTablePartial(w, r)
 		return
 	}
-	s.redirect(w, r, "/bartender/products")
+	s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 }
 
 func (s *Server) ProductDeletePost(w http.ResponseWriter, r *http.Request) {
+	search, category, status := inventoryFiltersFromRequest(r)
 	idStr := chi.URLParam(r, "id")
 	id, ok := parseInt64(idStr)
 	if !ok {
-		s.redirect(w, r, "/bartender/products")
+		s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 		return
 	}
 	if err := s.App.Store().Q.DeleteProduct(id); err != nil {
 		s.App.AddFlash(w, r, app.FlashError, "Delete failed (ingredient might be used by a cocktail).")
-		s.redirect(w, r, "/bartender/products")
+		s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 		return
 	}
 
@@ -178,16 +180,12 @@ func (s *Server) ProductDeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.App.AddFlash(w, r, app.FlashSuccess, "Ingredient deleted.")
-	s.redirect(w, r, "/bartender/products")
+	s.redirect(w, r, inventoryURL("/bartender/products", search, category, status))
 }
 
 func (s *Server) renderProductsTablePartial(w http.ResponseWriter, r *http.Request) {
-	search := r.URL.Query().Get("q")
-	products, _ := s.App.Store().Q.ListProducts(search)
-	s.renderPartial(w, r, "products_table.html", BartenderProductsPage{
-		Search:   search,
-		Products: products,
-	}, "")
+	search, category, status := inventoryFiltersFromRequest(r)
+	s.renderPartial(w, r, "products_table.html", s.buildBartenderProductsPage(search, category, status, ProductFormState{}), "/bartender/products")
 }
 
 func parseProductFormInput(r *http.Request) (productFormInput, bool) {
@@ -219,10 +217,10 @@ func parseProductFormInput(r *http.Request) (productFormInput, bool) {
 	return in, true
 }
 
-func productFormStateFromProduct(p db.Product) ProductFormState {
+func productFormStateFromProduct(p db.Product, action string) ProductFormState {
 	return ProductFormState{
 		Mode:          "edit",
-		Action:        "/bartender/products/" + strconv.FormatInt(p.ID, 10) + "/edit",
+		Action:        action,
 		Name:          p.Name,
 		Category:      p.Category,
 		ABVPercent:    floatPtrToString(p.ABVPercent),
@@ -245,4 +243,110 @@ func int64PtrToString(v *int64) string {
 		return ""
 	}
 	return strconv.FormatInt(*v, 10)
+}
+
+func inventoryFiltersFromRequest(r *http.Request) (string, string, string) {
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	return q, "", ""
+}
+
+func normalizeInventoryStatus(raw string) string {
+	switch strings.TrimSpace(strings.ToLower(raw)) {
+	case "", "all":
+		return ""
+	case "available", "low", "out", "unavailable":
+		return strings.TrimSpace(strings.ToLower(raw))
+	default:
+		return ""
+	}
+}
+
+func productCategories(products []db.Product) []string {
+	seen := map[string]struct{}{}
+	var categories []string
+	for _, product := range products {
+		category := strings.TrimSpace(product.Category)
+		if category == "" {
+			continue
+		}
+		if _, ok := seen[category]; ok {
+			continue
+		}
+		seen[category] = struct{}{}
+		categories = append(categories, category)
+	}
+	sort.Strings(categories)
+	return categories
+}
+
+func filterProducts(products []db.Product, category, status string) []db.Product {
+	category = strings.TrimSpace(category)
+	status = normalizeInventoryStatus(status)
+	if category == "" && status == "" {
+		return products
+	}
+
+	filtered := make([]db.Product, 0, len(products))
+	for _, product := range products {
+		if category != "" && !strings.EqualFold(strings.TrimSpace(product.Category), category) {
+			continue
+		}
+
+		label := inventoryStatusLabel(product.StockCount, product.ComputedAvail)
+		switch status {
+		case "available":
+			if label != "Available" {
+				continue
+			}
+		case "low":
+			if label != "Low Stock" {
+				continue
+			}
+		case "out":
+			if label != "Out of Stock" {
+				continue
+			}
+		case "unavailable":
+			if label != "Unavailable" {
+				continue
+			}
+		}
+
+		filtered = append(filtered, product)
+	}
+
+	return filtered
+}
+
+func inventoryURL(path, search, category, status string) string {
+	values := url.Values{}
+	if search = strings.TrimSpace(search); search != "" {
+		values.Set("q", search)
+	}
+	if category = strings.TrimSpace(category); category != "" {
+		values.Set("category", category)
+	}
+	if status = normalizeInventoryStatus(status); status != "" {
+		values.Set("status", status)
+	}
+	if encoded := values.Encode(); encoded != "" {
+		return path + "?" + encoded
+	}
+	return path
+}
+
+func inventoryStatusLabel(stock *int64, available bool) string {
+	if stock != nil {
+		if *stock <= 0 {
+			return "Out of Stock"
+		}
+		if *stock <= 2 {
+			return "Low Stock"
+		}
+		return "Available"
+	}
+	if available {
+		return "Available"
+	}
+	return "Unavailable"
 }

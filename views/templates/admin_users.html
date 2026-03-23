@@ -1,102 +1,89 @@
 {{define "admin_users.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">Admin portal</p>
-    <h1>Users and roles</h1>
-    <p class="page-header__body">Create accounts, control access, and manage bartender duty from one clear workspace.</p>
-  </div>
-</section>
-
-<section class="stack stack--lg">
-  <section class="panel panel--inventory-form">
-    {{template "user_form.html" .}}
-  </section>
-
-  <section class="panel">
-    <div class="inventory-toolbar">
-      <div class="inventory-toolbar__copy">
-        <h2>All users</h2>
-        <p class="muted">Update profile details, enable or disable access, switch duty status, and set a fresh password when needed.</p>
-      </div>
+<section>
+  <header class="mb-12 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+    <div class="space-y-2">
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary mb-2">Admin Directory</p>
+      <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none text-primary">Users</h1>
+      <p class="text-secondary text-sm max-w-2xl">This screen uses the exported Synthetica surfaces as the source of truth while keeping the core user-management POST routes intact.</p>
     </div>
+    <div class="bg-surface-container-low rounded-xl px-8 py-6 min-w-[240px]">
+      <p class="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-secondary">Accounts</p>
+      <p class="text-4xl font-light tracking-tight text-primary mt-2">{{len .Page.Users}}</p>
+    </div>
+  </header>
 
-    <div class="table">
-      <div class="table__head table__head--users">
-        <div>Email</div>
-        <div>Name</div>
-        <div>Role</div>
-        <div>Active</div>
-        <div>Bartender duty</div>
-      </div>
+  <div class="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-8">
+    <aside class="xl:sticky xl:top-28 self-start bg-surface-container-low rounded-xl p-8">
+      {{template "user_form.html" .}}
+    </aside>
 
+    <section class="space-y-6">
       {{range .Page.Users}}
-        <form method="post" action="/admin/users/{{.ID}}" class="table__row table__row--users">
-          <label class="field table-field">
-            <span class="table-field__label">Email</span>
-            <input name="email" type="email" value="{{.Email}}">
-          </label>
-
-          <label class="field table-field">
-            <span class="table-field__label">Display name</span>
-            <input name="display_name" value="{{.DisplayName}}">
-          </label>
-
-          <label class="field table-field">
-            <span class="table-field__label">Role</span>
-            <select name="role">
-              <option value="USER" {{if eq .Role "USER"}}selected{{end}}>User</option>
-              <option value="BARTENDER" {{if eq .Role "BARTENDER"}}selected{{end}}>Bartender</option>
-              <option value="ADMIN" {{if eq .Role "ADMIN"}}selected{{end}}>Admin</option>
-            </select>
-          </label>
-
-          <div class="table__status table-field table-field--status">
-            <span class="table-field__label">Access</span>
-            <div class="pill {{if .IsActive}}pill--ok{{else}}pill--bad{{end}}">
-              {{if .IsActive}}Active{{else}}Disabled{{end}}
+        <form method="post" action="/admin/users/{{.ID}}" class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm" data-shell-search-item="{{.DisplayName}} {{.Email}} {{.Role}} {{if .IsActive}}active{{else}}disabled{{end}} {{if .OnDuty}}on duty{{else}}off duty{{end}}">
+          <div class="px-8 py-6 flex flex-col lg:flex-row lg:items-start justify-between gap-6 border-b border-black/5">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-sm font-bold tracking-[0.12em] uppercase text-primary">{{initials .DisplayName}}</div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-secondary mb-2">User Account</p>
+                <h2 class="text-xl font-medium tracking-tight text-primary">{{.DisplayName}}</h2>
+                <p class="text-sm text-secondary mt-1">{{.Email}}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 rounded {{if eq .Role "ADMIN"}}bg-primary text-on-primary{{else}}bg-surface-container-high text-on-surface-variant{{end}} text-[10px] font-bold uppercase tracking-wider">{{humanizeEnum .Role}}</span>
+              <span class="px-3 py-1 rounded {{if .IsActive}}bg-surface-container-highest text-primary{{else}}bg-error/10 text-error{{end}} text-[10px] font-bold uppercase tracking-wider">{{if .IsActive}}Active{{else}}Disabled{{end}}</span>
+              <span class="px-3 py-1 rounded {{if and (eq .Role "BARTENDER") .OnDuty}}bg-primary text-on-primary{{else}}bg-surface-container-high text-on-surface-variant{{end}} text-[10px] font-bold uppercase tracking-wider">{{if eq .Role "BARTENDER"}}{{if .OnDuty}}On Duty{{else}}Off Duty{{end}}{{else}}Directory{{end}}</span>
             </div>
           </div>
 
-          <div class="table__status table-field table-field--status">
-            <span class="table-field__label">Duty</span>
-            {{if eq .Role "BARTENDER"}}
-              <div class="pill {{if .OnDuty}}pill--ok{{else}}pill--soft{{end}}">
-                {{if .OnDuty}}On duty{{else}}Off duty{{end}}
-              </div>
-            {{else}}
-              <div class="pill pill--soft">Not applicable</div>
-            {{end}}
-          </div>
-
-          <div class="table__actions table__actions--users">
-            <div class="table__actions-group">
-              <button class="btn btn--small btn--primary" type="submit">Save details</button>
-
-              <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/toggle">
-                {{if .IsActive}}Disable access{{else}}Enable access{{end}}
-              </button>
-
-              {{if eq .Role "BARTENDER"}}
-                <button class="btn btn--small" type="submit" formaction="/admin/users/{{.ID}}/duty">
-                  {{if .OnDuty}}Set off duty{{else}}Set on duty{{end}}
-                </button>
-              {{end}}
+          <div class="px-8 py-6 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label class="block">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Email</span>
+                <input class="w-full bg-surface-container-low border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="email" type="email" value="{{.Email}}">
+              </label>
+              <label class="block">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Display Name</span>
+                <input class="w-full bg-surface-container-low border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="display_name" value="{{.DisplayName}}">
+              </label>
+              <label class="block">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">Role</span>
+                <select class="w-full bg-surface-container-low border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="role">
+                  <option value="USER" {{if eq .Role "USER"}}selected{{end}}>User</option>
+                  <option value="BARTENDER" {{if eq .Role "BARTENDER"}}selected{{end}}>Bartender</option>
+                  <option value="ADMIN" {{if eq .Role "ADMIN"}}selected{{end}}>Admin</option>
+                </select>
+              </label>
             </div>
 
-            <div class="field table-field table-field--password">
-              <span class="table-field__label">Reset password</span>
-              <div class="pwgroup pwgroup--stacked">
-                <input name="password" placeholder="New password" type="password" minlength="8">
-                <button class="btn btn--small" type="submit">Set password</button>
-              </div>
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
+              <label class="block">
+                <span class="text-[0.6875rem] uppercase tracking-[0.1em] font-bold text-on-secondary-container mb-3 block">New Password</span>
+                <input class="w-full bg-surface-container-low border border-outline-variant/20 px-4 py-3 text-sm focus:border-primary focus:ring-0 rounded-lg" name="password" type="password" minlength="8" placeholder="Leave blank unless you want to rotate it">
+              </label>
+              <button class="bg-surface-container-highest px-4 py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:bg-surface-container-high transition-colors" type="submit">Save Password</button>
             </div>
 
             <input type="hidden" name="active" value="{{if .IsActive}}0{{else}}1{{end}}">
             <input type="hidden" name="on_duty" value="{{if .OnDuty}}0{{else}}1{{end}}">
+
+            <div class="flex flex-wrap gap-3">
+              <button class="bg-primary text-on-primary px-4 py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:opacity-90 transition-all" type="submit">Save Details</button>
+              <button class="bg-surface-container-highest px-4 py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:bg-surface-container-high transition-colors" type="submit" formaction="/admin/users/{{.ID}}/toggle">{{if .IsActive}}Disable Access{{else}}Enable Access{{end}}</button>
+              {{if eq .Role "BARTENDER"}}
+                <button class="bg-surface-container-highest px-4 py-3 rounded-[4px] text-xs font-semibold uppercase tracking-wide hover:bg-surface-container-high transition-colors" type="submit" formaction="/admin/users/{{.ID}}/duty">{{if .OnDuty}}Set Off Duty{{else}}Set On Duty{{end}}</button>
+              {{end}}
+            </div>
           </div>
         </form>
+      {{else}}
+        <section class="bg-surface-container-low rounded-xl p-10">
+          <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">Directory Empty</p>
+          <h2 class="text-2xl font-medium tracking-tight text-primary mb-3">No user accounts available.</h2>
+          <p class="text-secondary text-sm">Create the first account from the editor panel.</p>
+        </section>
       {{end}}
-    </div>
-  </section>
+    </section>
+  </div>
 </section>
 {{end}}

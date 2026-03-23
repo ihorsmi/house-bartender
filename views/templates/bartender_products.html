@@ -1,43 +1,33 @@
 {{define "bartender_products.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">{{if and .User (eq .User.Role "ADMIN")}}Admin portal{{else}}Bartender portal{{end}}</p>
-    <h1>Ingredients inventory</h1>
-    <p class="page-header__body">Products are the reusable ingredients used in recipes. Track stock cleanly and make it obvious when availability comes from stock versus a manual switch.</p>
-  </div>
-</section>
+<section>
+  <header class="mb-10 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+    <div class="space-y-2">
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">Stock Room</p>
+      <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none text-primary">Inventory</h1>
+      <p class="text-secondary text-sm max-w-xl">Search ingredients quickly while keeping live stock edits on the same screen.</p>
+    </div>
 
-<section class="stack stack--lg">
-  <section class="panel panel--inventory-form">
-    {{template "product_form.html" .}}
-  </section>
-
-  <section class="panel">
-    <div class="inventory-toolbar">
-      <div class="inventory-toolbar__copy">
-        <h2>Inventory</h2>
-        <p class="muted">Search by ingredient name or category, update stock quickly, and use the manual availability toggle only when stock is left blank.</p>
-      </div>
-
-      <label class="field field--search inventory-toolbar__search">
-        <span class="field__label">Find an ingredient</span>
-        <input
-          id="prodSearch"
-          class="input input--search"
-          type="search"
-          name="q"
-          placeholder="Search by name or category"
-          value="{{.Page.Search}}"
-          data-hx-get="/partials/bartender/products"
-          data-hx-target="#productsTable"
-          data-hx-trigger="keyup delay:250ms"
-        >
+    <form class="w-full xl:w-auto" action="/bartender/products" method="get" data-inventory-controls data-inventory-page-url="/bartender/products" data-inventory-partial-url="/partials/bartender/products">
+      <label class="flex h-10 w-full items-center rounded-[4px] border border-black/5 bg-surface-container-low px-4 sm:min-w-[360px] xl:min-w-[420px]">
+        <span class="material-symbols-outlined text-secondary mr-2 text-[18px]">search</span>
+        <input class="bg-transparent border-none focus:ring-0 text-sm font-medium text-primary p-0 w-full placeholder:text-secondary/50" id="prodSearch" name="q" value="{{.Page.Search}}" placeholder="Search ingredients..." type="search" autocomplete="off" data-inventory-search>
       </label>
-    </div>
+    </form>
+  </header>
 
-    <div id="productsTable">
-      {{template "products_table.html" .}}
-    </div>
+  <section id="productsTable">
+    {{template "products_table.html" .}}
   </section>
+
+  <section id="inventory-editor" class="mt-12 max-w-4xl">
+    <aside class="bg-surface-container-low rounded-xl p-8">
+      {{template "product_form.html" .}}
+    </aside>
+  </section>
+
+  <a class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all z-40 group" href="#inventory-editor" aria-label="Add ingredient">
+    <span class="material-symbols-outlined text-[28px]">add</span>
+    <span class="absolute right-full mr-4 bg-black text-white px-3 py-1 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Add Ingredient</span>
+  </a>
 </section>
 {{end}}

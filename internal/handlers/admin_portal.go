@@ -14,10 +14,16 @@ type AdminUsersPage struct {
 	Users []db.User
 }
 
+type CountStat struct {
+	Label string
+	Value string
+}
+
 type AdminSettingsPage struct {
-	DBPath  string
-	DataDir string
-	Counts  string
+	DBPath    string
+	DataDir   string
+	Counts    string
+	CountList []CountStat
 }
 
 func (s *Server) AdminUsersGet(w http.ResponseWriter, r *http.Request) {
@@ -191,9 +197,10 @@ func (s *Server) AdminSettingsGet(w http.ResponseWriter, r *http.Request) {
 	counts, _ := s.App.Store().Q.DebugCounts()
 	cfg := s.App.Config()
 	page := AdminSettingsPage{
-		DBPath:  cfg.DBPath,
-		DataDir: cfg.DataDir,
-		Counts:  counts,
+		DBPath:    cfg.DBPath,
+		DataDir:   cfg.DataDir,
+		Counts:    counts,
+		CountList: parseCountStats(counts),
 	}
 	s.renderLayout(w, r, "Settings", "admin_settings.html", page)
 }
@@ -220,4 +227,23 @@ func (s *Server) hasAnotherActiveAdmin(excludeID int64) bool {
 		}
 	}
 	return n > 0
+}
+
+func parseCountStats(raw string) []CountStat {
+	var stats []CountStat
+	for _, part := range strings.Split(raw, "|") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		segments := strings.SplitN(part, "=", 2)
+		if len(segments) != 2 {
+			continue
+		}
+		stats = append(stats, CountStat{
+			Label: strings.TrimSpace(segments[0]),
+			Value: strings.TrimSpace(segments[1]),
+		})
+	}
+	return stats
 }

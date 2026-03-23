@@ -1,127 +1,77 @@
 {{define "products_table.html"}}
 {{with .Page}}
+  {{$page := .}}
   {{if .Products}}
-    <div class="table-scroll">
-      <table class="data-table data-table--inventory">
-        <colgroup>
-          <col>
-          <col>
-          <col class="data-table__col--stock">
-          <col class="data-table__col--status">
-          {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
-            <col class="data-table__col--actions">
-          {{end}}
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Ingredient</th>
-            <th>Category</th>
-            <th class="right">Stock</th>
-            <th>Availability</th>
-            {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
-              <th class="right">Actions</th>
-            {{end}}
-          </tr>
-        </thead>
-        <tbody>
-          {{range .Products}}
-            <tr>
-              <td data-label="Ingredient">
-                <div class="cell-stack cell-stack--tight">
-                  <strong>{{.Name}}</strong>
-                  {{if .Notes}}<div class="muted tiny">{{.Notes}}</div>{{end}}
-                </div>
-              </td>
-
-              <td data-label="Category">
-                <div class="cell-stack">
-                  <div>{{.Category}}</div>
-                  {{if .ABVPercent}}<div class="muted tiny">{{.ABVPercent}}% ABV</div>{{end}}
-                  {{if .AllergenFlags}}<div class="muted tiny">Allergens: {{.AllergenFlags}}</div>{{end}}
-                </div>
-              </td>
-
-              <td data-label="Stock" class="data-table__cell data-table__cell--stock">
-                {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
-                  <div class="cell-stack cell-stack--end">
-                    <span class="table-note table-note--plain">Set stock count</span>
-                    <form class="stock-editor"
-                          method="post"
-                          action="/bartender/products/{{.ID}}/stock"
-                          data-hx-post="/bartender/products/{{.ID}}/stock"
-                          data-hx-target="#productsTable"
-                          data-hx-swap="innerHTML">
-                      <input class="input input--stock right" name="stock_count" type="number" min="0" step="1" placeholder="Blank" value="{{if .StockCount}}{{.StockCount}}{{end}}">
-                      <button class="btn btn--small" type="submit">Save stock</button>
-                    </form>
-                    <div class="muted tiny">{{if .StockCount}}Availability follows this value automatically{{else}}Enter a value to start tracking stock, or leave it blank to use manual availability{{end}}</div>
-                  </div>
-                {{else}}
-                  {{if .StockCount}}{{.StockCount}}{{else}}Not tracked{{end}}
-                {{end}}
-              </td>
-
-              <td data-label="Availability" class="data-table__cell data-table__cell--status">
-                <div class="cell-stack">
-                  {{if .ComputedAvail}}
-                    <span class="badge badge--ok">Available</span>
-                  {{else}}
-                    <span class="badge">Unavailable</span>
-                  {{end}}
-
-                  <div class="muted tiny">{{if .StockCount}}Controlled by stock{{else}}Controlled manually{{end}}</div>
-                </div>
-              </td>
-
-              {{if and $.User (or (eq $.User.Role "BARTENDER") (eq $.User.Role "ADMIN"))}}
-                <td data-label="Actions" class="data-table__cell data-table__cell--actions">
-                  <div class="inventory-actions">
-                    {{if .StockCount}}
-                      <div class="inventory-actions__primary">
-                        <span class="table-note">Availability follows stock</span>
-                      </div>
-                    {{else}}
-                      <form class="inventory-actions__primary"
-                            method="post"
-                            action="/bartender/products/{{.ID}}/toggle"
-                            data-hx-post="/bartender/products/{{.ID}}/toggle"
-                            data-hx-target="#productsTable"
-                            data-hx-swap="innerHTML">
-                        <input type="hidden" name="is_available" value="{{if .ComputedAvail}}0{{else}}1{{end}}">
-                        <button class="btn btn--small btn--primary" type="submit">
-                          {{if .ComputedAvail}}Mark unavailable{{else}}Mark available{{end}}
-                        </button>
-                      </form>
-                    {{end}}
-
-                    <a class="btn btn--small" href="/bartender/products/{{.ID}}/edit">Edit</a>
-
-                    <form method="post"
-                          action="/bartender/products/{{.ID}}/delete"
-                          data-hx-post="/bartender/products/{{.ID}}/delete"
-                          data-hx-target="#productsTable"
-                          data-hx-swap="innerHTML"
-                          onsubmit="return confirm('Delete ingredient? This may affect cocktails using it.');">
-                      <button class="btn btn--small btn--danger" type="submit">Delete</button>
-                    </form>
+    <section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[900px]">
+          <thead>
+            <tr class="bg-surface-container-low/50">
+              <th class="px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">Ingredient</th>
+              <th class="px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">Category</th>
+              <th class="px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">Stock Level</th>
+              <th class="px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">Status</th>
+              <th class="px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-black/5">
+            {{range .Products}}
+              {{$status := productStatusLabel .StockCount .ComputedAvail}}
+              <tr class="hover:bg-surface-container-low/30 transition-colors group" data-shell-search-item="{{.Name}} {{.Category}} {{$status}} {{.Notes}}">
+                <td class="px-8 py-5">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-surface-container rounded-[4px] flex items-center justify-center">
+                      <span class="material-symbols-outlined text-secondary" style="font-size: 16px;">{{productIcon .Name .Category}}</span>
+                    </div>
+                    <div>
+                      <span class="text-sm font-bold tracking-tight">{{.Name}}</span>
+                      {{if .Notes}}<p class="text-[12px] text-secondary mt-1">{{.Notes}}</p>{{end}}
+                    </div>
                   </div>
                 </td>
-              {{end}}
-            </tr>
-          {{end}}
-        </tbody>
-      </table>
-    </div>
+                <td class="px-8 py-5">
+                  <span class="text-[13px] text-secondary">{{if .Category}}{{.Category}}{{else}}Ingredient{{end}}</span>
+                </td>
+                <td class="px-8 py-5">
+                  <div class="flex items-center gap-4">
+                    <form method="post" action="{{inventoryURL (print "/bartender/products/" .ID "/stock") $page.Search $page.Category $page.Status}}" class="m-0" data-hx-post="{{inventoryURL (print "/bartender/products/" .ID "/stock") $page.Search $page.Category $page.Status}}" data-hx-target="#productsTable" data-hx-swap="innerHTML">
+                      <input type="hidden" name="stock_count" value="{{stockDecrement .StockCount}}">
+                      <button class="w-6 h-6 flex items-center justify-center bg-surface-container-high rounded-[4px] hover:bg-surface-container-highest transition-colors" type="submit">-</button>
+                    </form>
+                    <span class="text-[13px] font-medium w-8 text-center">{{stockValue .StockCount}}</span>
+                    <form method="post" action="{{inventoryURL (print "/bartender/products/" .ID "/stock") $page.Search $page.Category $page.Status}}" class="m-0" data-hx-post="{{inventoryURL (print "/bartender/products/" .ID "/stock") $page.Search $page.Category $page.Status}}" data-hx-target="#productsTable" data-hx-swap="innerHTML">
+                      <input type="hidden" name="stock_count" value="{{stockIncrement .StockCount}}">
+                      <button class="w-6 h-6 flex items-center justify-center bg-surface-container-high rounded-[4px] hover:bg-surface-container-highest transition-colors" type="submit">+</button>
+                    </form>
+                    <span class="text-[12px] text-secondary/60">{{productUnit .Name .Category}}</span>
+                  </div>
+                </td>
+                <td class="px-8 py-5">
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full {{if eq $status "Available"}}bg-emerald-500{{else if eq $status "Low Stock"}}bg-amber-500{{else}}bg-error{{end}}"></span>
+                    <span class="text-[12px] font-medium {{if eq $status "Available"}}text-emerald-700/80{{else if eq $status "Low Stock"}}text-amber-700/80{{else}}text-error/80{{end}}">{{$status}}</span>
+                  </div>
+                </td>
+                <td class="px-8 py-5 text-right">
+                  <a class="opacity-0 group-hover:opacity-100 transition-opacity text-secondary hover:text-black inline-flex" href="{{inventoryURL (print "/bartender/products/" .ID "/edit") $page.Search $page.Category $page.Status}}">
+                    <span class="material-symbols-outlined">more_horiz</span>
+                  </a>
+                </td>
+              </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+      <div class="px-8 py-4 bg-surface-container-low/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <p class="text-[11px] text-secondary uppercase tracking-[0.05em]">Showing {{len .Products}} live entries</p>
+      </div>
+    </section>
   {{else}}
-    <section class="empty-state">
-      <h3 class="empty-state__title">No ingredients found</h3>
-      <p class="empty-state__body">{{if .Search}}Try a broader search or create the ingredient first.{{else}}Create your first ingredient to start building cocktails.{{end}}</p>
+    <section class="bg-surface-container-low rounded-xl p-10">
+      <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-3">Inventory Empty</p>
+      <h2 class="text-2xl font-medium tracking-tight text-primary mb-3">No ingredients found.</h2>
+      <p class="text-secondary text-sm">{{if .Search}}Try a broader search or create the ingredient first.{{else}}Create your first ingredient to start building cocktails.{{end}}</p>
     </section>
   {{end}}
-{{else}}
-  <section class="empty-state">
-    <h3 class="empty-state__title">No ingredients found</h3>
-    <p class="empty-state__body">There is nothing to show right now.</p>
-  </section>
 {{end}}
 {{end}}

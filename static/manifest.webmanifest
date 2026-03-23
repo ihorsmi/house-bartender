@@ -1,0 +1,25 @@
+{
+  "id": "/bartender",
+  "name": "House Bartender",
+  "short_name": "Bartender",
+  "description": "Live bartender queue with mobile new-order alerts.",
+  "start_url": "/bartender",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1722",
+  "theme_color": "#126d5b",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

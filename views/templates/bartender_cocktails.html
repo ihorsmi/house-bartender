@@ -1,32 +1,24 @@
 {{define "bartender_cocktails.html"}}
-<section class="page-header">
-  <div class="page-header__copy">
-    <p class="page-header__eyebrow">Bartender portal</p>
-    <h1>Cocktails</h1>
-    <p class="page-header__body">Keep recipes clear for the team. "Menu on" controls visibility, while "Orderable" depends on required ingredients being available.</p>
-  </div>
-
-  <div class="page-actions">
-    <a class="btn btn--ghost" href="/bartender/products">Check ingredients</a>
-    <a class="btn btn--primary" href="/bartender/cocktails/new">New cocktail</a>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="panel__header">
-    <div>
-      <h2>Recipe library</h2>
-      <p class="muted">Update recipes when the build changes, switch menu visibility when a drink should stay hidden, and delete only when the recipe is no longer needed.</p>
+<section>
+  {{$partialPath := "/partials/bartender/cocktails"}}
+  <header class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+    <div class="space-y-2">
+      <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">Collections</span>
+      <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none text-primary">The Library</h1>
+      <p class="text-secondary text-sm max-w-xl">Review the full cocktail catalog, filter by base spirit, and keep the bartender library aligned with the live menu.</p>
     </div>
 
-    <div class="action-cluster" role="group" aria-label="Cocktail view switch">
-      <button class="btn btn--primary" type="button" data-cocktail-view-set="list">Line view</button>
-      <button class="btn btn--ghost" type="button" data-cocktail-view-set="cards">Grid view</button>
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+      <a class="{{if eq .Page.Spirit ""}}bg-primary text-on-primary{{else}}bg-surface-container-low text-secondary hover:bg-surface-container-high{{end}} px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors" href="{{libraryURL .Path .Page.Search "" 1}}" data-hx-get="{{libraryURL $partialPath .Page.Search "" 1}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL .Path .Page.Search "" 1}}">All Spirits</a>
+      <a class="{{if eq .Page.Spirit "whiskey"}}bg-primary text-on-primary{{else}}bg-surface-container-low text-secondary hover:bg-surface-container-high{{end}} px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors" href="{{libraryURL .Path .Page.Search "whiskey" 1}}" data-hx-get="{{libraryURL $partialPath .Page.Search "whiskey" 1}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL .Path .Page.Search "whiskey" 1}}">Whiskey</a>
+      <a class="{{if eq .Page.Spirit "gin"}}bg-primary text-on-primary{{else}}bg-surface-container-low text-secondary hover:bg-surface-container-high{{end}} px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors" href="{{libraryURL .Path .Page.Search "gin" 1}}" data-hx-get="{{libraryURL $partialPath .Page.Search "gin" 1}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL .Path .Page.Search "gin" 1}}">Gin</a>
+      <a class="{{if eq .Page.Spirit "tequila"}}bg-primary text-on-primary{{else}}bg-surface-container-low text-secondary hover:bg-surface-container-high{{end}} px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors" href="{{libraryURL .Path .Page.Search "tequila" 1}}" data-hx-get="{{libraryURL $partialPath .Page.Search "tequila" 1}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL .Path .Page.Search "tequila" 1}}">Tequila</a>
+      <a class="{{if eq .Page.Spirit "rum"}}bg-primary text-on-primary{{else}}bg-surface-container-low text-secondary hover:bg-surface-container-high{{end}} px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors" href="{{libraryURL .Path .Page.Search "rum" 1}}" data-hx-get="{{libraryURL $partialPath .Page.Search "rum" 1}}" data-hx-target="#libraryResults" data-hx-swap="innerHTML" data-hx-push-url="{{libraryURL .Path .Page.Search "rum" 1}}">Rum</a>
     </div>
-  </div>
+  </header>
 
-  <div class="grid cocktails-view" id="cocktailsTable" data-cocktail-view-target data-cocktail-view="list">
-    {{template "cocktails_table.html" .}}
+  <div id="libraryResults">
+    {{template "library_results.html" .}}
   </div>
 </section>
 {{end}}
