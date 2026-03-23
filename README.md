@@ -20,6 +20,7 @@ Version `1.0.5` focuses on a full cross-portal refresh and a cleaner service wor
 ## Table of contents
 
 - [Highlights](#highlights)
+- [What's New in 1.0.5](#whats-new-in-105)
 - [Portals](#portals)
 - [Tech stack](#tech-stack)
 - [Quick start](#quick-start)
@@ -41,6 +42,32 @@ Version `1.0.5` focuses on a full cross-portal refresh and a cleaner service wor
 - Create and edit cocktails with ingredient rules, uploads, instructions, and menu visibility controls.
 - Manage users, roles, passwords, bartender duty, and system maintenance from aligned admin screens.
 - Dismiss login, duty, and system flash notifications reliably across portals.
+
+## What's New in 1.0.5
+
+### Cross-portal redesign
+
+- Rebuilt the shared shell so login, guest, bartender, and admin screens feel like one product instead of separate subsystems.
+- Standardized page titles, header rhythm, shared search placement, and primary actions across the portals.
+- Fixed flash notifications so login, duty, and system notices dismiss correctly instead of lingering on screen.
+
+### User portal
+
+- Reworked `The Library` into a cleaner live catalog with spirit chips and shared search.
+- Added a dedicated cocktail detail page with hero imagery, ingredient availability, and the full guest order form.
+- Simplified `Order History` so guests can follow bartender assignment and status transitions more easily.
+
+### Bartender portal
+
+- Reworked `Service Dashboard` with live counts, queue preview, and direct operations shortcuts.
+- Simplified `Live Queue` to a single `Complete Order` action while preserving intermediate status events in history.
+- Rebuilt `Inventory` into a search-first stock room with inline stock controls and a cleaner ingredient editor.
+- Refreshed the cocktail library and recipe editor to match the same visual system and ingredient-rule model.
+
+### Admin portal
+
+- Rebuilt `Users` into a cleaner directory and editor split with role, password, access, and duty controls in one place.
+- Reworked `System Control` so counts, paths, and maintenance actions use the same shell and information rhythm.
 
 ## Portals
 
